@@ -2,11 +2,11 @@ package com.sameer.chess.validation;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.sameer.chess.TestBoards.place;
 
 import org.junit.jupiter.api.Test;
 
 import com.sameer.chess.board.Board;
-import com.sameer.chess.model.Piece;
 import com.sameer.chess.model.Position;
 import com.sameer.chess.model.enums.Color;
 import com.sameer.chess.model.enums.Type;
@@ -41,11 +41,5 @@ class AttackDetectorTests {
         place(board, Color.BLACK, Type.ROOK, 0, 4);
 
         assertTrue(detector.isSquareAttacked(board, board.findKing(Color.WHITE), Color.BLACK));
-    }
-
-    private Piece place(Board board, Color color, Type type, int row, int col) {
-        Piece piece = new Piece(color, type);
-        board.placePiece(new Position(row, col), piece);
-        return piece;
     }
 }

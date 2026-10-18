@@ -9,7 +9,6 @@ import com.sameer.chess.board.BoardReader;
 import com.sameer.chess.game.GameState;
 import com.sameer.chess.model.Piece;
 import com.sameer.chess.model.Position;
-import com.sameer.chess.model.enums.Color;
 import com.sameer.chess.model.enums.Type;
 import com.sameer.chess.move.Move;
 import com.sameer.chess.move.MoveKind;
@@ -31,14 +30,13 @@ public class PromotionRule implements SpecialMoveRule {
         if (piece.getType() != Type.PAWN) {
             return candidates;
         }
-        int promotionRow = piece.getColor() == Color.WHITE ? 0 : 7;
+        int promotionRow = piece.getColor().promotionRow();
         List<Move> result = new ArrayList<>();
         for (Move candidate : candidates) {
             if (candidate.to().row() == promotionRow) {
                 for (Type promotionType : PROMOTION_TYPES) {
                     result.add(new Move(
-                            from, candidate.to(), candidate.capturedPiece(),
-                            promotionType, MoveKind.PROMOTION));
+                            from, candidate.to(), promotionType, MoveKind.PROMOTION));
                 }
             } else {
                 result.add(candidate);

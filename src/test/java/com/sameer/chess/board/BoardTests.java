@@ -2,6 +2,8 @@ package com.sameer.chess.board;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,11 +25,11 @@ class BoardTests {
         BoardReader reader = board;
         BoardWriter writer = board;
         Position square = new Position(7, 0);
-        Piece rook = new Piece(Color.WHITE, Type.KING);
+        Piece king = new Piece(Color.WHITE, Type.KING);
 
-        writer.placePiece(square, rook);
+        writer.placePiece(square, king);
 
-        assertSame(rook, reader.getPiece(square));
+        assertSame(king, reader.getPiece(square));
         assertTrue(reader.isOccupied(square));
         assertTrue(reader.isInBounds(7, 7));
         assertFalse(reader.isInBounds(8, 7));
@@ -45,25 +47,29 @@ class BoardTests {
 
         board.movePiece(from, to);
 
-        assertTrue(board.getPiece(from) == null);
+        assertNull(board.getPiece(from));
         assertSame(pawn, board.getPiece(to));
         assertSame(pawn, board.removePiece(to));
+        assertNull(board.removePiece(to));
         assertTrue(board.getOccupiedPositions().isEmpty());
     }
 
     @Test
-    void rejectsOccupiedSquaresDuplicatePiecesAndInvalidRelocation() {
+    void rejectsOccupiedSquaresAndInvalidRelocation() {
         Board board = new Board();
         Position from = new Position(7, 0);
+        Position occupied = new Position(7, 7);
         Piece rook = new Piece(Color.WHITE, Type.ROOK);
+        Piece bishop = new Piece(Color.BLACK, Type.BISHOP);
         board.placePiece(from, rook);
+        board.placePiece(occupied, bishop);
 
         assertThrows(IllegalArgumentException.class,
                 () -> board.placePiece(new Position(7, 0), new Piece(Color.WHITE, Type.ROOK)));
         assertThrows(IllegalArgumentException.class,
-                () -> board.placePiece(new Position(7, 7), rook));
-        assertThrows(IllegalArgumentException.class,
                 () -> board.movePiece(from, new Position(7, 0)));
+        assertThrows(IllegalArgumentException.class,
+                () -> board.movePiece(from, occupied));
         assertThrows(IllegalArgumentException.class,
                 () -> board.movePiece(new Position(6, 0), new Position(5, 0)));
     }
@@ -73,14 +79,32 @@ class BoardTests {
         Board original = new Board();
         Position from = new Position(7, 1);
         Position to = new Position(5, 2);
-        original.placePiece(from, new Piece(Color.WHITE, Type.KNIGHT));
+        Piece knight = new Piece(Color.WHITE, Type.KNIGHT);
+        Position blackKingSquare = new Position(0, 4);
+        Piece blackKing = new Piece(Color.BLACK, Type.KING);
+        original.placePiece(from, knight);
+        original.placePiece(blackKingSquare, blackKing);
         Board copy = original.copy();
 
+        assertSame(knight, copy.getPiece(from));
+        assertSame(blackKing, copy.getPiece(blackKingSquare));
+        assertEquals(List.of(new Position(0, 4), from), copy.getOccupiedPositions());
+        assertNull(copy.findKing(Color.WHITE));
+        assertEquals(blackKingSquare, copy.findKing(Color.BLACK));
         copy.movePiece(from, to);
 
-        assertFalse(original.getPiece(from) == null);
-        assertTrue(original.getPiece(to) == null);
-        assertTrue(copy.getPiece(from) == null);
+        assertNotNull(original.getPiece(from));
+        assertNull(original.getPiece(to));
+        assertNull(copy.getPiece(from));
         assertEquals(Type.KNIGHT, copy.getPiece(to).getType());
+    }
+
+    @Test
+    void findKingReturnsNullWhenColorHasNoKing() {
+        Board board = new Board();
+        board.placePiece(new Position(4, 4), new Piece(Color.BLACK, Type.KNIGHT));
+
+        assertNull(board.findKing(Color.WHITE));
+        assertNull(board.findKing(Color.BLACK));
     }
 }

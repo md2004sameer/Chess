@@ -84,7 +84,7 @@ public final class GameState {
         if (sideToMove != color
                 || enPassantTarget == null
                 || !enPassantTarget.equals(to)
-                || from.getRow() != to.getRow() + (color == Color.WHITE ? 1 : -1)
+                || to.getRow() != from.getRow() + color.forward()
                 || Math.abs(from.getCol() - to.getCol()) != 1
                 || pawnAtTarget == null) {
             return false;
@@ -129,7 +129,7 @@ public final class GameState {
         enPassantTarget = null;
         if (movingPiece.getType() == Type.PAWN
                 && move.from().getCol() == move.to().getCol()
-                && move.from().getRow() == (movingColor == Color.WHITE ? 6 : 1)
+                && move.from().getRow() == movingColor.pawnRow()
                 && Math.abs(move.to().getRow() - move.from().getRow()) == 2) {
             enPassantTarget = new Position(
                     (move.from().getRow() + move.to().getRow()) / 2, move.from().getCol());
@@ -141,7 +141,7 @@ public final class GameState {
         if (movingColor == Color.BLACK) {
             fullMoveNumber++;
         }
-        sideToMove = movingColor == Color.WHITE ? Color.BLACK : Color.WHITE;
+        sideToMove = movingColor.opposite();
         moveHistory.add(move);
     }
 
@@ -154,7 +154,7 @@ public final class GameState {
             return;
         }
 
-        int homeRow = piece.getColor() == Color.WHITE ? 7 : 0;
+        int homeRow = piece.getColor().homeRow();
         if (position.getRow() == homeRow && position.getCol() == 0) {
             setRightsWithoutValidation(piece.getColor(), canCastle(piece.getColor(), true), false);
         } else if (position.getRow() == homeRow && position.getCol() == 7) {

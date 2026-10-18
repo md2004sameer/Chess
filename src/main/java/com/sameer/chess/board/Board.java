@@ -9,7 +9,7 @@ import com.sameer.chess.model.Position;
 import com.sameer.chess.model.enums.Color;
 import com.sameer.chess.model.enums.Type;
 
-public class Board implements BoardReader, BoardWriter {
+public class Board implements MutableBoard {
 
     private final Piece[][] squares = new Piece[8][8];
 
@@ -35,11 +35,6 @@ public class Board implements BoardReader, BoardWriter {
         Objects.requireNonNull(piece, "piece must not be null");
         if (isOccupied(position)) {
             throw new IllegalArgumentException("Square is already occupied");
-        }
-        for (Position occupiedPosition : getOccupiedPositions()) {
-            if (getPiece(occupiedPosition) == piece) {
-                throw new IllegalArgumentException("Piece is already on the board");
-            }
         }
         squares[position.row()][position.col()] = piece;
     }
@@ -103,7 +98,7 @@ public class Board implements BoardReader, BoardWriter {
             for (int col = 0; col < squares[row].length; col++) {
                 Piece piece = squares[row][col];
                 if (piece != null) {
-                    copy.squares[row][col] = new Piece(piece.getColor(), piece.getType());
+                    copy.squares[row][col] = piece;
                 }
             }
         }

@@ -9,8 +9,8 @@ import com.sameer.chess.board.BoardReader;
 import com.sameer.chess.game.GameState;
 import com.sameer.chess.model.Piece;
 import com.sameer.chess.model.Position;
-import com.sameer.chess.model.enums.Color;
 import com.sameer.chess.model.enums.Type;
+import com.sameer.chess.move.Castling;
 import com.sameer.chess.move.Move;
 import com.sameer.chess.move.MoveKind;
 
@@ -27,7 +27,7 @@ public class CastlingRule implements SpecialMoveRule {
         if (piece.getType() != Type.KING) {
             return candidates;
         }
-        int homeRow = piece.getColor() == Color.WHITE ? 7 : 0;
+        int homeRow = piece.getColor().homeRow();
         if (from.row() != homeRow || from.col() != 4) {
             return candidates;
         }
@@ -47,22 +47,17 @@ public class CastlingRule implements SpecialMoveRule {
         if (!gameState.canCastle(king.getColor(), kingSide)) {
             return;
         }
-        int homeRow = from.row();
-        int rookCol = kingSide ? 7 : 0;
-        Piece rook = board.getPiece(new Position(homeRow, rookCol));
+        Castling castling = Castling.forSide(kingSide);
+        Piece rook = board.getPiece(castling.rookStart(from));
         if (rook == null || rook.getType() != Type.ROOK || rook.getColor() != king.getColor()) {
             return;
         }
-        int step = kingSide ? 1 : -1;
-        for (int col = from.col() + step; col != rookCol; col += step) {
-            if (board.isOccupied(new Position(homeRow, col))) {
-                return;
-            }
+        if (!castling.hasClearPath(board, from)) {
+            return;
         }
         moves.add(new Move(
                 from,
-                new Position(homeRow, kingSide ? 6 : 2),
-                null,
+                castling.kingDestination(from),
                 null,
                 MoveKind.CASTLING));
     }

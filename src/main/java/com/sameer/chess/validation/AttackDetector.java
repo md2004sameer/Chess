@@ -38,7 +38,7 @@ public class AttackDetector {
         return switch (piece.getType()) {
             case KING -> Math.max(absRowDifference, absColDifference) == 1;
             case KNIGHT -> absRowDifference * absColDifference == 2;
-            case PAWN -> rowDifference == (piece.getColor() == Color.WHITE ? -1 : 1)
+            case PAWN -> rowDifference == piece.getColor().forward()
                     && absColDifference == 1;
             case ROOK -> (rowDifference == 0 || colDifference == 0)
                     && isPathClear(from, target, board);

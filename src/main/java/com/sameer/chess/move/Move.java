@@ -3,14 +3,12 @@ package com.sameer.chess.move;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.sameer.chess.model.Piece;
 import com.sameer.chess.model.Position;
 import com.sameer.chess.model.enums.Type;
 
 public record Move(
         Position from,
         Position to,
-        Piece capturedPiece,
         Type promotionType,
         MoveKind kind) {
 
@@ -28,27 +26,10 @@ public record Move(
         if ((kind == MoveKind.PROMOTION) != (promotionType != null)) {
             throw new IllegalArgumentException("Promotion moves must include exactly one promotion type");
         }
-        if ((kind == MoveKind.CASTLING || kind == MoveKind.EN_PASSANT) && promotionType != null) {
-            throw new IllegalArgumentException("Special move cannot also be a promotion");
-        }
     }
 
     public Move(Position from, Position to) {
-        this(from, to, null, null, MoveKind.NORMAL);
-    }
-
-    public Move(Position from, Position to, Type promotionType, boolean castling, boolean enPassant) {
-        this(from, to, null, promotionType, kindFromFlags(promotionType, castling, enPassant));
-    }
-
-    public Move(
-            Position from,
-            Position to,
-            Piece capturedPiece,
-            Type promotionType,
-            boolean castling,
-            boolean enPassant) {
-        this(from, to, capturedPiece, promotionType, kindFromFlags(promotionType, castling, enPassant));
+        this(from, to, null, MoveKind.NORMAL);
     }
 
     public Position getFrom() {
@@ -57,10 +38,6 @@ public record Move(
 
     public Position getTo() {
         return to;
-    }
-
-    public Optional<Piece> getCapturedPiece() {
-        return Optional.ofNullable(capturedPiece);
     }
 
     public Optional<Type> getPromotionType() {
@@ -73,24 +50,5 @@ public record Move(
 
     public boolean isEnPassant() {
         return kind == MoveKind.EN_PASSANT;
-    }
-
-    public Move withCapturedPiece(Piece piece) {
-        return new Move(from, to, Objects.requireNonNull(piece, "captured piece must not be null"),
-                promotionType, kind);
-    }
-
-    private static MoveKind kindFromFlags(
-            Type promotionType, boolean castling, boolean enPassant) {
-        if (castling && enPassant) {
-            throw new IllegalArgumentException("A move cannot be both castling and en passant");
-        }
-        if (castling) {
-            return MoveKind.CASTLING;
-        }
-        if (enPassant) {
-            return MoveKind.EN_PASSANT;
-        }
-        return promotionType == null ? MoveKind.NORMAL : MoveKind.PROMOTION;
     }
 }

@@ -6,26 +6,31 @@ import java.util.List;
 import com.sameer.chess.board.BoardReader;
 import com.sameer.chess.model.Piece;
 import com.sameer.chess.model.Position;
-import com.sameer.chess.model.enums.Color;
+import com.sameer.chess.model.enums.Type;
 import com.sameer.chess.move.Move;
 
 public class PawnMoveGenerator implements MoveGenerator {
 
     @Override
+    public Type type() {
+        return Type.PAWN;
+    }
+
+    @Override
     public List<Move> generateMoves(Position from, BoardReader board) {
-        List<Move> moves = new ArrayList<>();
         Piece piece = board.getPiece(from);
-        if (piece == null) {
-            return moves;
+        if (piece == null || piece.getType() != type()) {
+            return List.of();
         }
-        int direction = piece.getColor() == Color.WHITE ? -1 : 1;
+        List<Move> moves = new ArrayList<>();
+        int direction = piece.getColor().forward();
         int nextRow = from.getRow() + direction;
 
         if (Position.isOnBoard(nextRow, from.getCol())
                 && board.getPiece(new Position(nextRow, from.getCol())) == null) {
             moves.add(new Move(from, new Position(nextRow, from.getCol())));
 
-            int startingRow = piece.getColor() == Color.WHITE ? 6 : 1;
+            int startingRow = piece.getColor().pawnRow();
             int doubleStepRow = from.getRow() + 2 * direction;
             if (from.getRow() == startingRow
                     && board.getPiece(new Position(doubleStepRow, from.getCol())) == null) {

@@ -14,11 +14,11 @@ abstract class SlidingMoveGenerator implements MoveGenerator {
 
     @Override
     public List<Move> generateMoves(Position from, BoardReader board) {
-        List<Move> moves = new ArrayList<>();
         Piece piece = board.getPiece(from);
-        if (piece == null) {
-            return moves;
+        if (piece == null || piece.getType() != type()) {
+            return List.of();
         }
+        List<Move> moves = new ArrayList<>();
 
         for (int[] direction : directions()) {
             int row = from.getRow();

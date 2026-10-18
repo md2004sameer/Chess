@@ -3,10 +3,12 @@ package com.sameer.chess.game;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.List;
+import static com.sameer.chess.TestBoards.game;
+import static com.sameer.chess.TestBoards.move;
+import static com.sameer.chess.TestBoards.place;
 
 import org.junit.jupiter.api.Test;
 
@@ -16,13 +18,6 @@ import com.sameer.chess.model.Position;
 import com.sameer.chess.model.enums.Color;
 import com.sameer.chess.model.enums.Type;
 import com.sameer.chess.move.Move;
-import com.sameer.chess.move.MoveExecutor;
-import com.sameer.chess.move.generator.MoveGeneratorConfiguration;
-import com.sameer.chess.move.rule.CastlingRule;
-import com.sameer.chess.move.rule.EnPassantRule;
-import com.sameer.chess.move.rule.PromotionRule;
-import com.sameer.chess.validation.AttackDetector;
-import com.sameer.chess.validation.MoveValidator;
 
 class GameTests {
 
@@ -75,7 +70,7 @@ class GameTests {
                 .orElseThrow();
         game.playMove(enPassant);
 
-        assertTrue(game.getState().getEnPassantTarget() == null);
+        assertNull(game.getState().getEnPassantTarget());
         assertEquals(0, game.getState().getHalfMoveClock());
 
         game.undoMove();
@@ -83,7 +78,7 @@ class GameTests {
         assertEquals(new Position(2, 3), game.getState().getEnPassantTarget());
 
         game.playMove(move(7, 7, 6, 7));
-        assertTrue(game.getState().getEnPassantTarget() == null);
+        assertNull(game.getState().getEnPassantTarget());
     }
 
     @Test
@@ -107,10 +102,16 @@ class GameTests {
         state = new GameState(Color.BLACK);
         state.setCastlingRights(Color.WHITE, true, false);
         Game captureGame = game(board, state);
+        Piece capturedRook = board.getPiece(new Position(7, 7));
+        Piece capturingRook = board.getPiece(new Position(0, 7));
         captureGame.playMove(move(0, 7, 7, 7));
         assertFalse(state.canCastle(Color.WHITE, true));
+        assertSame(capturingRook, board.getPiece(new Position(7, 7)));
+        assertNull(board.getPiece(new Position(0, 7)));
         captureGame.undoMove();
         assertTrue(state.canCastle(Color.WHITE, true));
+        assertSame(capturingRook, board.getPiece(new Position(0, 7)));
+        assertSame(capturedRook, board.getPiece(new Position(7, 7)));
     }
 
     @Test
@@ -126,22 +127,4 @@ class GameTests {
         assertEquals(1, game.getState().getFullMoveNumber());
     }
 
-    private Piece place(Board board, Color color, Type type, int row, int col) {
-        Piece piece = new Piece(color, type);
-        board.placePiece(new Position(row, col), piece);
-        return piece;
-    }
-
-    private Move move(int fromRow, int fromCol, int toRow, int toCol) {
-        return new Move(new Position(fromRow, fromCol), new Position(toRow, toCol));
-    }
-
-    private Game game(Board board, GameState state) {
-        MoveValidator validator = new MoveValidator(
-                new MoveGeneratorConfiguration().moveGeneratorRegistry(),
-                List.of(new CastlingRule(), new EnPassantRule(), new PromotionRule()),
-                new AttackDetector(),
-                new MoveExecutor());
-        return new Game(board, board, state, validator, new MoveExecutor());
-    }
 }

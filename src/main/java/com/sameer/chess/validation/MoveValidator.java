@@ -7,7 +7,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 import com.sameer.chess.board.BoardReader;
-import com.sameer.chess.board.BoardWriter;
+import com.sameer.chess.board.MutableBoard;
 import com.sameer.chess.game.GameState;
 import com.sameer.chess.model.Piece;
 import com.sameer.chess.model.Position;
@@ -15,6 +15,7 @@ import com.sameer.chess.model.enums.Color;
 import com.sameer.chess.model.enums.Type;
 import com.sameer.chess.move.Move;
 import com.sameer.chess.move.MoveExecutor;
+import com.sameer.chess.move.MoveExecutor.Executed;
 import com.sameer.chess.move.MoveKind;
 import com.sameer.chess.move.generator.MoveGeneratorRegistry;
 import com.sameer.chess.move.rule.SpecialMoveRule;
@@ -40,9 +41,8 @@ public class MoveValidator {
     }
 
     public List<Move> getLegalMoves(
-            BoardReader board, BoardWriter writer, Position from, GameState gameState) {
+            MutableBoard board, Position from, GameState gameState) {
         Objects.requireNonNull(board, "board must not be null");
-        Objects.requireNonNull(writer, "board writer must not be null");
         Objects.requireNonNull(from, "from position must not be null");
         Objects.requireNonNull(gameState, "game state must not be null");
         Color playerColor = gameState.getSideToMove();
@@ -52,14 +52,13 @@ public class MoveValidator {
             return List.of();
         }
         return pseudoLegalMoves(board, from, piece, gameState).stream()
-                .filter(move -> isLegalMove(board, writer, move, gameState))
+                .filter(move -> isLegalMove(board, move, gameState))
                 .toList();
     }
 
     public boolean isLegalMove(
-            BoardReader board, BoardWriter writer, Move move, GameState gameState) {
+            MutableBoard board, Move move, GameState gameState) {
         Objects.requireNonNull(board, "board must not be null");
-        Objects.requireNonNull(writer, "board writer must not be null");
         Objects.requireNonNull(move, "move must not be null");
         Objects.requireNonNull(gameState, "game state must not be null");
         Color playerColor = gameState.getSideToMove();
@@ -90,22 +89,22 @@ public class MoveValidator {
             int step = Integer.compare(move.to().col(), move.from().col());
             Position transit = new Position(move.from().row(), move.from().col() + step);
             Move transitMove = new Move(move.from(), transit);
-            Move executedTransit = moveExecutor.execute(board, writer, transitMove, gameState);
+            Executed executedTransit = moveExecutor.execute(board, transitMove);
             try {
                 if (attackDetector.isSquareAttacked(board, transit, opponentColor)) {
                     return false;
                 }
             } finally {
-                moveExecutor.undo(writer, executedTransit, movingPiece);
+                moveExecutor.undo(board, executedTransit, movingPiece);
             }
         }
 
-        Move executedMove = moveExecutor.execute(board, writer, move, gameState);
+        Executed executedMove = moveExecutor.execute(board, move);
         try {
             Position king = board.findKing(playerColor);
             return king != null && !attackDetector.isSquareAttacked(board, king, opponentColor);
         } finally {
-            moveExecutor.undo(writer, executedMove, movingPiece);
+            moveExecutor.undo(board, executedMove, movingPiece);
         }
     }
 
@@ -126,6 +125,6 @@ public class MoveValidator {
     }
 
     private Color opponentOf(Color color) {
-        return color == Color.WHITE ? Color.BLACK : Color.WHITE;
+        return color.opposite();
     }
 }
