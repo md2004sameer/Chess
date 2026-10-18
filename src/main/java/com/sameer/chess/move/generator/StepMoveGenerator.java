@@ -8,28 +8,23 @@ import com.sameer.chess.model.Piece;
 import com.sameer.chess.model.Position;
 import com.sameer.chess.move.Move;
 
-abstract class StepMoveGenerator implements MoveGenerator {
+abstract class StepMoveGenerator extends AbstractMoveGenerator {
 
-    protected abstract int[][] offsets();
+    protected abstract List<Direction> directions();
 
     @Override
-    public List<Move> generateMoves(Position from, BoardReader board) {
-        Piece piece = board.getPiece(from);
-        if (piece == null || piece.getType() != type()) {
-            return List.of();
-        }
+    protected final List<Move> generatePieceMoves(Position from, BoardReader board, Piece piece) {
         List<Move> moves = new ArrayList<>();
 
-        for (int[] offset : offsets()) {
-            int row = from.getRow() + offset[0];
-            int col = from.getCol() + offset[1];
+        for (Direction direction : directions()) {
+            int row = from.row() + direction.dRow();
+            int col = from.col() + direction.dCol();
             if (!Position.isOnBoard(row, col)) {
                 continue;
             }
 
             Position to = new Position(row, col);
-            Piece target = board.getPiece(to);
-            if (target == null || target.getColor() != piece.getColor()) {
+            if (canLandOn(board, to, piece)) {
                 moves.add(new Move(from, to));
             }
         }

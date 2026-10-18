@@ -1,15 +1,16 @@
 package com.sameer.chess.move.generator;
 
+import java.util.List;
+
 import com.sameer.chess.model.enums.Type;
 
 public class KnightMoveGenerator extends StepMoveGenerator {
 
-    private static final int[][] OFFSETS = {
-        {-2, -1}, {-2, 1},
-        {-1, -2}, {-1, 2},
-        {1, -2}, {1, 2},
-        {2, -1}, {2, 1}
-    };
+    private static final List<Direction> DIRECTIONS = List.of(
+            new Direction(-2, -1), new Direction(-2, 1),
+            new Direction(-1, -2), new Direction(-1, 2),
+            new Direction(1, -2), new Direction(1, 2),
+            new Direction(2, -1), new Direction(2, 1));
 
     @Override
     public Type type() {
@@ -17,7 +18,7 @@ public class KnightMoveGenerator extends StepMoveGenerator {
     }
 
     @Override
-    protected int[][] offsets() {
-        return OFFSETS;
+    protected List<Direction> directions() {
+        return DIRECTIONS;
     }
 }

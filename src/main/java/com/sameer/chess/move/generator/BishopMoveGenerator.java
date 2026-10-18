@@ -1,13 +1,10 @@
 package com.sameer.chess.move.generator;
 
+import java.util.List;
+
 import com.sameer.chess.model.enums.Type;
 
 public class BishopMoveGenerator extends SlidingMoveGenerator {
-
-    private static final int[][] DIRECTIONS = {
-        {-1, -1}, {-1, 1},
-        {1, -1}, {1, 1}
-    };
 
     @Override
     public Type type() {
@@ -15,7 +12,7 @@ public class BishopMoveGenerator extends SlidingMoveGenerator {
     }
 
     @Override
-    public int[][] directions() {
-        return DIRECTIONS;
+    protected List<Direction> directions() {
+        return Directions.DIAGONAL;
     }
 }

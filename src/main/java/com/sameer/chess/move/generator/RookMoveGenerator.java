@@ -1,13 +1,10 @@
 package com.sameer.chess.move.generator;
 
+import java.util.List;
+
 import com.sameer.chess.model.enums.Type;
 
 public class RookMoveGenerator extends SlidingMoveGenerator {
-
-    private static final int[][] DIRECTIONS = {
-        {-1, 0}, {1, 0},
-        {0, -1}, {0, 1}
-    };
 
     @Override
     public Type type() {
@@ -15,7 +12,7 @@ public class RookMoveGenerator extends SlidingMoveGenerator {
     }
 
     @Override
-    protected int[][] directions() {
-        return DIRECTIONS;
+    protected List<Direction> directions() {
+        return Directions.ORTHOGONAL;
     }
 }

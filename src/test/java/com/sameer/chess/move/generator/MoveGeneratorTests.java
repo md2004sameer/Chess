@@ -1,6 +1,8 @@
 package com.sameer.chess.move.generator;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static com.sameer.chess.TestBoards.assertMoves;
 import static com.sameer.chess.TestBoards.move;
 import static com.sameer.chess.TestBoards.place;
@@ -70,6 +72,80 @@ class MoveGeneratorTests {
     }
 
     @Test
+    void queenCanCaptureEnemyAndStopsBeforeFriendlyBlocker() {
+        Board board = new Board();
+        place(board, Color.WHITE, Type.QUEEN, 4, 4);
+        place(board, Color.WHITE, Type.PAWN, 4, 6);
+        place(board, Color.BLACK, Type.PAWN, 4, 2);
+
+        List<Move> moves = generate(Type.QUEEN, new Position(4, 4), board);
+
+        assertTrue(moves.contains(move(4, 4, 4, 2)));
+        assertFalse(moves.contains(move(4, 4, 4, 6)));
+        assertFalse(moves.contains(move(4, 4, 4, 7)));
+    }
+
+    @Test
+    void sharedDirectionTablesAreImmutable() {
+        assertThrows(UnsupportedOperationException.class,
+                () -> Directions.ALL.add(new Direction(2, 2)));
+    }
+
+    @Test
+    void blackRookCanCaptureEnemyAndStopsAtFriendlyPiece() {
+        Board board = new Board();
+        place(board, Color.BLACK, Type.ROOK, 4, 4);
+        place(board, Color.BLACK, Type.PAWN, 4, 5);
+        place(board, Color.WHITE, Type.PAWN, 2, 4);
+
+        List<Move> moves = generate(Type.ROOK, new Position(4, 4), board);
+
+        assertTrue(moves.contains(move(4, 4, 2, 4)));
+        assertFalse(moves.contains(move(4, 4, 4, 5)));
+        assertFalse(moves.contains(move(4, 4, 4, 6)));
+    }
+
+    @Test
+    void blackBishopCanCaptureEnemyAndStopsAtFriendlyPiece() {
+        Board board = new Board();
+        place(board, Color.BLACK, Type.BISHOP, 4, 4);
+        place(board, Color.BLACK, Type.PAWN, 5, 5);
+        place(board, Color.WHITE, Type.PAWN, 2, 2);
+
+        List<Move> moves = generate(Type.BISHOP, new Position(4, 4), board);
+
+        assertTrue(moves.contains(move(4, 4, 2, 2)));
+        assertFalse(moves.contains(move(4, 4, 5, 5)));
+        assertFalse(moves.contains(move(4, 4, 6, 6)));
+    }
+
+    @Test
+    void blackKnightCanCaptureEnemyButNotLandOnFriendlyPiece() {
+        Board board = new Board();
+        place(board, Color.BLACK, Type.KNIGHT, 4, 4);
+        place(board, Color.BLACK, Type.PAWN, 2, 5);
+        place(board, Color.WHITE, Type.PAWN, 2, 3);
+
+        List<Move> moves = generate(Type.KNIGHT, new Position(4, 4), board);
+
+        assertTrue(moves.contains(move(4, 4, 2, 3)));
+        assertFalse(moves.contains(move(4, 4, 2, 5)));
+    }
+
+    @Test
+    void blackKingCanCaptureEnemyButNotLandOnFriendlyPiece() {
+        Board board = new Board();
+        place(board, Color.BLACK, Type.KING, 4, 4);
+        place(board, Color.BLACK, Type.PAWN, 3, 4);
+        place(board, Color.WHITE, Type.PAWN, 3, 3);
+
+        List<Move> moves = generate(Type.KING, new Position(4, 4), board);
+
+        assertTrue(moves.contains(move(4, 4, 3, 3)));
+        assertFalse(moves.contains(move(4, 4, 3, 4)));
+    }
+
+    @Test
     void kingMovesOneSquareAndCannotLandOnFriendlyPiece() {
         Board board = new Board();
         place(board, Color.WHITE, Type.KING, 0, 0);
@@ -88,6 +164,17 @@ class MoveGeneratorTests {
         List<Move> moves = generate(Type.PAWN, new Position(6, 3), board);
 
         assertMoves(moves, move(6, 3, 5, 3), move(6, 3, 4, 3));
+    }
+
+    @Test
+    void whitePawnCannotDoubleStepWhenDestinationIsBlocked() {
+        Board board = new Board();
+        place(board, Color.WHITE, Type.PAWN, 6, 3);
+        place(board, Color.BLACK, Type.KNIGHT, 4, 3);
+
+        List<Move> moves = generate(Type.PAWN, new Position(6, 3), board);
+
+        assertMoves(moves, move(6, 3, 5, 3));
     }
 
     @Test
