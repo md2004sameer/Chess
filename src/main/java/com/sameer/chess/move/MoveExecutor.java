@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.sameer.chess.board.MutableBoard;
 import com.sameer.chess.model.Piece;
 import com.sameer.chess.model.Position;
+import com.sameer.chess.model.enums.Type;
 
 @Component
 public class MoveExecutor {
@@ -36,6 +37,9 @@ public class MoveExecutor {
         Piece capturedPiece = board.getPiece(capturePosition);
         if (capturedPiece != null && capturedPiece.getColor() == movingPiece.getColor()) {
             throw new IllegalArgumentException("Cannot capture own piece");
+        }
+        if (capturedPiece != null && capturedPiece.getType() == Type.KING) {
+            throw new IllegalArgumentException("Cannot capture a king");
         }
         if (move.kind() == MoveKind.CASTLING) {
             Castling castling = Castling.forMove(move);

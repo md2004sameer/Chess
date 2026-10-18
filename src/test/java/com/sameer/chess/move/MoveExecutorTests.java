@@ -107,6 +107,19 @@ class MoveExecutorTests {
     }
 
     @Test
+    void executionRejectsCapturingKingWithoutMutatingBoard() {
+        Board board = new Board();
+        Position from = new Position(4, 4);
+        Position to = new Position(4, 5);
+        Piece rook = place(board, Color.WHITE, Type.ROOK, from);
+        Piece king = place(board, Color.BLACK, Type.KING, to);
+
+        assertThrows(IllegalArgumentException.class, () -> executor.execute(board, new Move(from, to)));
+        assertSame(rook, board.getPiece(from));
+        assertSame(king, board.getPiece(to));
+    }
+
+    @Test
     void executesAndUndoesPromotion() {
         Board board = new Board();
         Position from = new Position(1, 0);
