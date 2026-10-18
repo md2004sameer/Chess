@@ -84,6 +84,29 @@ class MoveExecutorTests {
     }
 
     @Test
+    void executionRejectsSameSourceAndDestinationWithoutMutatingBoard() {
+        Board board = new Board();
+        Position position = new Position(4, 4);
+        Piece rook = place(board, Color.WHITE, Type.ROOK, position);
+
+        assertThrows(IllegalArgumentException.class, () -> executor.execute(board, new Move(position, position)));
+        assertSame(rook, board.getPiece(position));
+    }
+
+    @Test
+    void executionRejectsCapturingOwnPieceWithoutMutatingBoard() {
+        Board board = new Board();
+        Position from = new Position(4, 4);
+        Position to = new Position(4, 5);
+        Piece rook = place(board, Color.WHITE, Type.ROOK, from);
+        Piece bishop = place(board, Color.WHITE, Type.BISHOP, to);
+
+        assertThrows(IllegalArgumentException.class, () -> executor.execute(board, new Move(from, to)));
+        assertSame(rook, board.getPiece(from));
+        assertSame(bishop, board.getPiece(to));
+    }
+
+    @Test
     void executesAndUndoesPromotion() {
         Board board = new Board();
         Position from = new Position(1, 0);
