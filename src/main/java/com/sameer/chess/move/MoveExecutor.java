@@ -66,28 +66,43 @@ public class MoveExecutor {
         Objects.requireNonNull(originalPiece, "original piece must not be null");
 
         Move move = executed.move();
-        Piece movedPiece = board.removePiece(move.to());
         Piece expectedPiece = move.kind() == MoveKind.PROMOTION
                 ? new Piece(originalPiece.getColor(), move.promotionType())
                 : originalPiece;
+        Piece movedPiece = board.getPiece(move.to());
         if (!expectedPiece.equals(movedPiece)) {
-            if (movedPiece != null) {
-                board.placePiece(move.to(), movedPiece);
-            }
-            throw new IllegalStateException("Expected moved piece at destination when undoing");
+            throw new IllegalStateException("Expected moved piece at destination");
         }
-        if (move.kind() == MoveKind.CASTLING) {
-            Castling castling = Castling.forMove(move);
-            board.movePiece(castling.rookDestination(move.from()), castling.rookStart(move.from()));
-            board.placePiece(move.from(), originalPiece);
-        } else {
-            board.placePiece(move.from(), originalPiece);
+        if (board.isOccupied(move.from())) {
+            throw new IllegalStateException("Origin square occupied");
         }
 
+        Castling castling = null;
+        if (move.kind() == MoveKind.CASTLING) {
+            castling = Castling.forMove(move);
+            if (board.isOccupied(castling.rookStart(move.from()))) {
+                throw new IllegalStateException("Castling rook start square occupied");
+            }
+            Piece rook = board.getPiece(castling.rookDestination(move.from()));
+            if (rook == null || rook.getColor() != originalPiece.getColor() || rook.getType() != Type.ROOK) {
+                throw new IllegalStateException("Expected castling rook at destination");
+            }
+        }
+
+        Position capturedPosition = move.kind() == MoveKind.EN_PASSANT
+                ? new Position(move.from().row(), move.to().col())
+                : move.to();
+        if (move.isEnPassant() && board.isOccupied(capturedPosition)) {
+            throw new IllegalStateException("Captured piece square occupied");
+        }
+
+        board.removePiece(move.to());
+        if (move.kind() == MoveKind.CASTLING) {
+            board.movePiece(castling.rookDestination(move.from()), castling.rookStart(move.from()));
+        }
+        board.placePiece(move.from(), originalPiece);
+
         if (executed.captured() != null) {
-            Position capturedPosition = move.kind() == MoveKind.EN_PASSANT
-                    ? new Position(move.from().row(), move.to().col())
-                    : move.to();
             board.placePiece(capturedPosition, executed.captured());
         }
     }

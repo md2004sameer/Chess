@@ -68,6 +68,20 @@ class MoveExecutorTests {
     }
 
     @Test
+    void undoRejectsOccupiedOriginWithoutMutatingBoard() {
+        Board board = new Board();
+        Position from = new Position(7, 0);
+        Position to = new Position(6, 0);
+        Piece rook = place(board, Color.WHITE, Type.ROOK, from);
+        MoveExecutor.Executed executed = executor.execute(board, new Move(from, to));
+        Piece obstruction = place(board, Color.BLACK, Type.BISHOP, from);
+
+        assertThrows(IllegalStateException.class, () -> executor.undo(board, executed, rook));
+        assertSame(rook, board.getPiece(to));
+        assertSame(obstruction, board.getPiece(from));
+    }
+
+    @Test
     void executionRejectsMissingSourceAndNullArguments() {
         Board board = new Board();
         Move move = new Move(new Position(4, 4), new Position(4, 5));
@@ -193,6 +207,23 @@ class MoveExecutorTests {
     }
 
     @Test
+    void undoRejectsOccupiedEnPassantCaptureSquareWithoutMutatingBoard() {
+        Board board = new Board();
+        Position whitePosition = new Position(3, 4);
+        Position blackEnd = new Position(3, 3);
+        Position enPassantTo = new Position(2, 3);
+        Piece whitePawn = place(board, Color.WHITE, Type.PAWN, whitePosition);
+        Piece blackPawn = place(board, Color.BLACK, Type.PAWN, blackEnd);
+        Move enPassant = new Move(whitePosition, enPassantTo, null, MoveKind.EN_PASSANT);
+        MoveExecutor.Executed executed = executor.execute(board, enPassant);
+        Piece obstruction = place(board, Color.BLACK, Type.BISHOP, blackEnd);
+
+        assertThrows(IllegalStateException.class, () -> executor.undo(board, executed, whitePawn));
+        assertSame(whitePawn, board.getPiece(enPassantTo));
+        assertSame(obstruction, board.getPiece(blackEnd));
+    }
+
+    @Test
     void executesAndUndoesBothCastlingSidesForBothColors() {
         for (Color color : Color.values()) {
             for (boolean kingSide : new boolean[]{true, false}) {
@@ -217,5 +248,24 @@ class MoveExecutorTests {
                 assertNull(board.getPiece(rookTo));
             }
         }
+    }
+
+    @Test
+    void undoRejectsOccupiedCastlingRookStartWithoutMutatingBoard() {
+        Board board = new Board();
+        Position kingFrom = new Position(7, 4);
+        Position kingTo = new Position(7, 6);
+        Position rookDestination = new Position(7, 5);
+        Position rookStart = new Position(7, 7);
+        Piece king = place(board, Color.WHITE, Type.KING, kingFrom);
+        Piece rook = place(board, Color.WHITE, Type.ROOK, rookStart);
+        Move castle = new Move(kingFrom, kingTo, null, MoveKind.CASTLING);
+        MoveExecutor.Executed executed = executor.execute(board, castle);
+        Piece obstruction = place(board, Color.BLACK, Type.BISHOP, rookStart);
+
+        assertThrows(IllegalStateException.class, () -> executor.undo(board, executed, king));
+        assertSame(king, board.getPiece(kingTo));
+        assertSame(rook, board.getPiece(rookDestination));
+        assertSame(obstruction, board.getPiece(rookStart));
     }
 }
