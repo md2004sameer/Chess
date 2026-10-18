@@ -16,7 +16,6 @@ import com.sameer.chess.model.enums.Type;
 import com.sameer.chess.move.Move;
 import com.sameer.chess.move.MoveExecutor;
 import com.sameer.chess.move.MoveExecutor.Executed;
-import com.sameer.chess.move.MoveKind;
 import com.sameer.chess.move.generator.MoveGeneratorRegistry;
 import com.sameer.chess.move.rule.SpecialMoveRule;
 
@@ -82,7 +81,7 @@ public class MoveValidator {
         }
 
         Color opponentColor = opponentOf(playerColor);
-        if (move.kind() == MoveKind.CASTLING) {
+        if (move.isCastling()) {
             if (attackDetector.isSquareAttacked(board, move.from(), opponentColor)) {
                 return false;
             }

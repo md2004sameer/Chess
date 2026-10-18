@@ -52,6 +52,10 @@ public record Move(
         return kind == MoveKind.EN_PASSANT;
     }
 
+    public boolean isPromotion() {
+        return kind == MoveKind.PROMOTION;
+    }
+
     public Position capturePosition() {
         return kind == MoveKind.EN_PASSANT ? new Position(from.row(), to.col()) : to;
     }

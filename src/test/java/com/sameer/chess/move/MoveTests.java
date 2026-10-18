@@ -1,6 +1,7 @@
 package com.sameer.chess.move;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -33,6 +34,8 @@ class MoveTests {
         assertEquals(Type.KNIGHT, promotion.promotionType());
         assertTrue(castle.isCastling());
         assertTrue(enPassant.isEnPassant());
+        assertTrue(promotion.isPromotion());
+        assertFalse(normal.isPromotion());
         assertEquals(new Position(3, 3), enPassant.capturePosition());
         assertEquals(to, normal.capturePosition());
     }
