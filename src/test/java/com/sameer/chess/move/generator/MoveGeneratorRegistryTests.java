@@ -1,10 +1,11 @@
 package com.sameer.chess.move.generator;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +18,9 @@ class MoveGeneratorRegistryTests {
         MoveGeneratorRegistry registry =
                 new MoveGeneratorConfiguration().moveGeneratorRegistry();
 
+        for (Type type : Type.values()) {
+            assertEquals(type, registry.getGenerator(type).type());
+        }
         assertInstanceOf(KingMoveGenerator.class, registry.getGenerator(Type.KING));
         assertInstanceOf(QueenMoveGenerator.class, registry.getGenerator(Type.QUEEN));
         assertInstanceOf(RookMoveGenerator.class, registry.getGenerator(Type.ROOK));
@@ -26,19 +30,21 @@ class MoveGeneratorRegistryTests {
     }
 
     @Test
-    void rejectsNullRegistryAndNullPieceType() {
+    void rejectsDuplicateTypes() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new MoveGeneratorRegistry(List.of(new KingMoveGenerator(), new KingMoveGenerator())));
+    }
+
+    @Test
+    void rejectsNullRegistryElementsAndPieceType() {
         assertThrows(NullPointerException.class, () -> new MoveGeneratorRegistry(null));
         MoveGeneratorRegistry registry =
                 new MoveGeneratorConfiguration().moveGeneratorRegistry();
         assertThrows(NullPointerException.class, () -> registry.getGenerator(null));
-        Map<Type, MoveGenerator> nullEntry = new HashMap<>();
-        nullEntry.put(Type.ROOK, null);
-        assertThrows(NullPointerException.class, () -> new MoveGeneratorRegistry(nullEntry));
-        Map<Type, MoveGenerator> nullKey = new HashMap<>();
-        nullKey.put(null, new RookMoveGenerator());
-        assertThrows(NullPointerException.class, () -> new MoveGeneratorRegistry(nullKey));
+        assertThrows(NullPointerException.class,
+                () -> new MoveGeneratorRegistry(Collections.singletonList(null)));
         assertThrows(IllegalArgumentException.class, () ->
-                new MoveGeneratorRegistry(Map.of(Type.PAWN, new PawnMoveGenerator()))
+                new MoveGeneratorRegistry(List.of(new PawnMoveGenerator()))
                         .getGenerator(Type.ROOK));
     }
 }

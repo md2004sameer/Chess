@@ -74,7 +74,7 @@
 ## Progress checklist
 
 - [x] Step 1 — Executor guards (already implemented; `./gradlew test` passed)
-- [ ] Step 2 — Move generator registry
+- [x] Step 2 — Move generator registry (`./gradlew test` passed)
 - [ ] Step 3 — Direction tables and shared generator base
 - [ ] Step 4 — Executed moves, capture positions, and atomic undo
 - [ ] Step 5 — Spring wiring and package-cycle removal
