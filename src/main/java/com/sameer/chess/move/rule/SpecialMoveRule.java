@@ -3,7 +3,6 @@ package com.sameer.chess.move.rule;
 import java.util.List;
 
 import com.sameer.chess.board.BoardReader;
-import com.sameer.chess.game.GameState;
 import com.sameer.chess.model.Piece;
 import com.sameer.chess.model.Position;
 import com.sameer.chess.move.Move;
@@ -16,5 +15,5 @@ public interface SpecialMoveRule {
             Position from,
             List<Move> candidates,
             BoardReader board,
-            GameState gameState);
+            RuleContext ruleContext);
 }

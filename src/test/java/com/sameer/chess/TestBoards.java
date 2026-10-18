@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.sameer.chess.board.Board;
+import com.sameer.chess.ChessConfiguration;
 import com.sameer.chess.game.Game;
 import com.sameer.chess.game.GameState;
 import com.sameer.chess.model.Piece;
@@ -50,7 +51,10 @@ public final class TestBoards {
     public static MoveValidator validator() {
         return new MoveValidator(
                 new MoveGeneratorConfiguration().moveGeneratorRegistry(),
-                List.of(new CastlingRule(), new EnPassantRule(), new PromotionRule()),
+                ChessConfiguration.specialMoveRules(
+                        new CastlingRule(),
+                        new EnPassantRule(),
+                        new PromotionRule()),
                 new AttackDetector(),
                 new MoveExecutor());
     }

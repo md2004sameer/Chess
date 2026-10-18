@@ -77,7 +77,7 @@
 - [x] Step 2 — Move generator registry (`./gradlew test` passed)
 - [x] Step 3 — Direction tables and shared generator base (`./gradlew test` passed)
 - [x] Step 4 — Executed moves, capture positions, and atomic undo (`./gradlew test` passed; prior API/atomicity work reused)
-- [ ] Step 5 — Spring wiring and package-cycle removal
+- [x] Step 5 — Spring wiring and package-cycle removal (`./gradlew test` passed)
 - [ ] Step 6 — Model and board cleanup
 - [ ] Step 7 — Remaining behavioral tests
 - [ ] Step 8 — Build and repository hygiene

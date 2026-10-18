@@ -3,17 +3,13 @@ package com.sameer.chess.move.rule;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.stereotype.Component;
-
 import com.sameer.chess.board.BoardReader;
-import com.sameer.chess.game.GameState;
 import com.sameer.chess.model.Piece;
 import com.sameer.chess.model.Position;
 import com.sameer.chess.model.enums.Type;
 import com.sameer.chess.move.Move;
 import com.sameer.chess.move.MoveKind;
 
-@Component
 public class EnPassantRule implements SpecialMoveRule {
 
     @Override
@@ -22,7 +18,7 @@ public class EnPassantRule implements SpecialMoveRule {
             Position from,
             List<Move> candidates,
             BoardReader board,
-            GameState gameState) {
+            RuleContext ruleContext) {
         if (piece.getType() != Type.PAWN) {
             return candidates;
         }
@@ -37,7 +33,7 @@ public class EnPassantRule implements SpecialMoveRule {
             Position target = new Position(targetRow, targetCol);
             Piece pawnAtTargetFile = board.getPiece(new Position(from.row(), targetCol));
             if (!board.isOccupied(target)
-                    && gameState.canCaptureEnPassant(from, target, piece.getColor(), pawnAtTargetFile)) {
+                    && ruleContext.canCaptureEnPassant(from, target, piece.getColor(), pawnAtTargetFile)) {
                 result.add(new Move(from, target, null, MoveKind.EN_PASSANT));
             }
         }

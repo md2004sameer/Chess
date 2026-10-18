@@ -2,14 +2,11 @@ package com.sameer.chess.validation;
 
 import java.util.Objects;
 
-import org.springframework.stereotype.Component;
-
 import com.sameer.chess.board.BoardReader;
 import com.sameer.chess.model.Piece;
 import com.sameer.chess.model.Position;
 import com.sameer.chess.model.enums.Color;
 
-@Component
 public class AttackDetector {
 
     public boolean isSquareAttacked(BoardReader board, Position target, Color attackingColor) {

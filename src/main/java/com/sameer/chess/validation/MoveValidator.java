@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.springframework.stereotype.Component;
-
 import com.sameer.chess.board.BoardReader;
 import com.sameer.chess.board.MutableBoard;
 import com.sameer.chess.game.GameState;
@@ -19,7 +17,6 @@ import com.sameer.chess.move.MoveExecutor.Executed;
 import com.sameer.chess.move.generator.MoveGeneratorRegistry;
 import com.sameer.chess.move.rule.SpecialMoveRule;
 
-@Component
 public class MoveValidator {
 
     private final MoveGeneratorRegistry generators;

@@ -3,10 +3,7 @@ package com.sameer.chess.move.rule;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.stereotype.Component;
-
 import com.sameer.chess.board.BoardReader;
-import com.sameer.chess.game.GameState;
 import com.sameer.chess.model.Piece;
 import com.sameer.chess.model.Position;
 import com.sameer.chess.model.enums.Type;
@@ -14,7 +11,6 @@ import com.sameer.chess.move.Castling;
 import com.sameer.chess.move.Move;
 import com.sameer.chess.move.MoveKind;
 
-@Component
 public class CastlingRule implements SpecialMoveRule {
 
     @Override
@@ -23,7 +19,7 @@ public class CastlingRule implements SpecialMoveRule {
             Position from,
             List<Move> candidates,
             BoardReader board,
-            GameState gameState) {
+            RuleContext ruleContext) {
         if (piece.getType() != Type.KING) {
             return candidates;
         }
@@ -32,8 +28,8 @@ public class CastlingRule implements SpecialMoveRule {
             return candidates;
         }
         List<Move> result = new ArrayList<>(candidates);
-        addCastlingMove(result, from, piece, board, gameState, true);
-        addCastlingMove(result, from, piece, board, gameState, false);
+        addCastlingMove(result, from, piece, board, ruleContext, true);
+        addCastlingMove(result, from, piece, board, ruleContext, false);
         return List.copyOf(result);
     }
 
@@ -42,9 +38,9 @@ public class CastlingRule implements SpecialMoveRule {
             Position from,
             Piece king,
             BoardReader board,
-            GameState gameState,
+            RuleContext ruleContext,
             boolean kingSide) {
-        if (!gameState.canCastle(king.getColor(), kingSide)) {
+        if (!ruleContext.canCastle(king.getColor(), kingSide)) {
             return;
         }
         Castling castling = Castling.forSide(kingSide);

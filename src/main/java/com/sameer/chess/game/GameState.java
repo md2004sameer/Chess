@@ -9,8 +9,9 @@ import com.sameer.chess.model.Position;
 import com.sameer.chess.model.enums.Color;
 import com.sameer.chess.model.enums.Type;
 import com.sameer.chess.move.Move;
+import com.sameer.chess.move.rule.RuleContext;
 
-public final class GameState {
+public final class GameState implements RuleContext {
 
     private Color sideToMove;
     private boolean whiteKingSideCastle;

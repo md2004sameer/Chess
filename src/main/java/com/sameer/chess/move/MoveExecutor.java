@@ -2,14 +2,11 @@ package com.sameer.chess.move;
 
 import java.util.Objects;
 
-import org.springframework.stereotype.Component;
-
 import com.sameer.chess.board.MutableBoard;
 import com.sameer.chess.model.Piece;
 import com.sameer.chess.model.Position;
 import com.sameer.chess.model.enums.Type;
 
-@Component
 public class MoveExecutor {
 
     public record Executed(Move move, Piece moved, Piece captured) {
