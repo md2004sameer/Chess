@@ -120,6 +120,19 @@ class MoveExecutorTests {
     }
 
     @Test
+    void executionRejectsEnPassantWithoutCapturedPieceWithoutMutatingBoard() {
+        Board board = new Board();
+        Position from = new Position(3, 4);
+        Position to = new Position(2, 3);
+        Piece pawn = place(board, Color.WHITE, Type.PAWN, from);
+        Move enPassant = new Move(from, to, null, MoveKind.EN_PASSANT);
+
+        assertThrows(IllegalArgumentException.class, () -> executor.execute(board, enPassant));
+        assertSame(pawn, board.getPiece(from));
+        assertNull(board.getPiece(to));
+    }
+
+    @Test
     void executesAndUndoesPromotion() {
         Board board = new Board();
         Position from = new Position(1, 0);

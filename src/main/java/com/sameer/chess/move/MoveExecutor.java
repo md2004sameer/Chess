@@ -22,10 +22,6 @@ public class MoveExecutor {
         Objects.requireNonNull(board, "board must not be null");
         Objects.requireNonNull(move, "move must not be null");
 
-        if (move.from().equals(move.to())) {
-            throw new IllegalArgumentException("from equals to");
-        }
-
         Piece movingPiece = board.getPiece(move.from());
         if (movingPiece == null) {
             throw new IllegalArgumentException("No piece at the source position");
@@ -35,11 +31,15 @@ public class MoveExecutor {
                 ? new Position(move.from().row(), move.to().col())
                 : move.to();
         Piece capturedPiece = board.getPiece(capturePosition);
-        if (capturedPiece != null && capturedPiece.getColor() == movingPiece.getColor()) {
-            throw new IllegalArgumentException("Cannot capture own piece");
+        if (move.from().equals(move.to())) {
+            throw new IllegalArgumentException("from equals to");
         }
-        if (capturedPiece != null && capturedPiece.getType() == Type.KING) {
-            throw new IllegalArgumentException("Cannot capture a king");
+        if (capturedPiece != null && (capturedPiece.getColor() == movingPiece.getColor()
+                || capturedPiece.getType() == Type.KING)) {
+            throw new IllegalArgumentException("Illegal capture");
+        }
+        if (move.isEnPassant() && capturedPiece == null) {
+            throw new IllegalArgumentException("No pawn to capture");
         }
         if (move.kind() == MoveKind.CASTLING) {
             Castling castling = Castling.forMove(move);
