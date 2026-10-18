@@ -95,7 +95,7 @@ public class MoveValidator {
                     return false;
                 }
             } finally {
-                moveExecutor.undo(board, executedTransit, movingPiece);
+                moveExecutor.undo(board, executedTransit);
             }
         }
 
@@ -104,7 +104,7 @@ public class MoveValidator {
             Position king = board.findKing(playerColor);
             return king != null && !attackDetector.isSquareAttacked(board, king, opponentColor);
         } finally {
-            moveExecutor.undo(board, executedMove, movingPiece);
+            moveExecutor.undo(board, executedMove);
         }
     }
 

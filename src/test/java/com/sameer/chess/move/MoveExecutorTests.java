@@ -33,7 +33,7 @@ class MoveExecutorTests {
         assertSame(request, executed.move());
         assertSame(queen, executed.captured());
         assertSame(rook, board.getPiece(to));
-        executor.undo(board, executed, rook);
+        executor.undo(board, executed);
         assertSame(rook, board.getPiece(from));
         assertSame(queen, board.getPiece(to));
     }
@@ -47,7 +47,7 @@ class MoveExecutorTests {
         MoveExecutor.Executed executed = executor.execute(board, new Move(from, to));
         board.removePiece(to);
 
-        assertThrows(IllegalStateException.class, () -> executor.undo(board, executed, rook));
+        assertThrows(IllegalStateException.class, () -> executor.undo(board, executed));
         assertNull(board.getPiece(to));
     }
 
@@ -62,7 +62,7 @@ class MoveExecutorTests {
         board.removePiece(to);
         board.placePiece(to, unexpected);
 
-        assertThrows(IllegalStateException.class, () -> executor.undo(board, executed, rook));
+        assertThrows(IllegalStateException.class, () -> executor.undo(board, executed));
         assertSame(unexpected, board.getPiece(to));
         assertNull(board.getPiece(from));
     }
@@ -76,7 +76,7 @@ class MoveExecutorTests {
         MoveExecutor.Executed executed = executor.execute(board, new Move(from, to));
         Piece obstruction = place(board, Color.BLACK, Type.BISHOP, from);
 
-        assertThrows(IllegalStateException.class, () -> executor.undo(board, executed, rook));
+        assertThrows(IllegalStateException.class, () -> executor.undo(board, executed));
         assertSame(rook, board.getPiece(to));
         assertSame(obstruction, board.getPiece(from));
     }
@@ -92,9 +92,15 @@ class MoveExecutorTests {
         assertThrows(NullPointerException.class, () -> executor.execute(null, move));
         assertThrows(NullPointerException.class, () -> executor.execute(board, null));
         assertThrows(IllegalArgumentException.class, () -> executor.execute(board, move));
-        assertThrows(NullPointerException.class, () -> executor.undo(null, executed, rook));
-        assertThrows(NullPointerException.class, () -> executor.undo(board, null, rook));
-        assertThrows(NullPointerException.class, () -> executor.undo(board, executed, null));
+        assertThrows(NullPointerException.class, () -> executor.undo(null, executed));
+        assertThrows(NullPointerException.class, () -> executor.undo(board, null));
+    }
+
+    @Test
+    void executedRequiresMovedPiece() {
+        Move move = new Move(new Position(4, 4), new Position(4, 5));
+
+        assertThrows(NullPointerException.class, () -> new MoveExecutor.Executed(move, null, null));
     }
 
     @Test
@@ -156,8 +162,9 @@ class MoveExecutorTests {
 
         MoveExecutor.Executed executed = executor.execute(board, promotion);
 
+        assertSame(pawn, executed.moved());
         assertEquals(Type.QUEEN, board.getPiece(to).getType());
-        executor.undo(board, executed, pawn);
+        executor.undo(board, executed);
         assertSame(pawn, board.getPiece(from));
         assertNull(board.getPiece(to));
     }
@@ -173,9 +180,10 @@ class MoveExecutorTests {
 
         MoveExecutor.Executed executed = executor.execute(board, promotion);
 
+        assertSame(pawn, executed.moved());
         assertSame(captured, executed.captured());
         assertEquals(Type.KNIGHT, board.getPiece(to).getType());
-        executor.undo(board, executed, pawn);
+        executor.undo(board, executed);
         assertSame(pawn, board.getPiece(from));
         assertSame(captured, board.getPiece(to));
     }
@@ -199,10 +207,10 @@ class MoveExecutorTests {
 
         assertSame(blackPawn, executed.captured());
         assertNull(board.getPiece(blackEnd));
-        executor.undo(board, executed, whitePawn);
+        executor.undo(board, executed);
         assertSame(blackPawn, board.getPiece(blackEnd));
         assertSame(whitePawn, board.getPiece(whitePosition));
-        executor.undo(board, executedDoubleStep, blackPawn);
+        executor.undo(board, executedDoubleStep);
         assertSame(blackPawn, board.getPiece(blackStart));
     }
 
@@ -218,7 +226,7 @@ class MoveExecutorTests {
         MoveExecutor.Executed executed = executor.execute(board, enPassant);
         Piece obstruction = place(board, Color.BLACK, Type.BISHOP, blackEnd);
 
-        assertThrows(IllegalStateException.class, () -> executor.undo(board, executed, whitePawn));
+        assertThrows(IllegalStateException.class, () -> executor.undo(board, executed));
         assertSame(whitePawn, board.getPiece(enPassantTo));
         assertSame(obstruction, board.getPiece(blackEnd));
     }
@@ -241,7 +249,7 @@ class MoveExecutorTests {
 
                 assertSame(king, board.getPiece(kingTo));
                 assertSame(rook, board.getPiece(rookTo));
-                executor.undo(board, executed, king);
+                executor.undo(board, executed);
                 assertSame(king, board.getPiece(kingFrom));
                 assertSame(rook, board.getPiece(rookFrom));
                 assertNull(board.getPiece(kingTo));
@@ -263,7 +271,7 @@ class MoveExecutorTests {
         MoveExecutor.Executed executed = executor.execute(board, castle);
         Piece obstruction = place(board, Color.BLACK, Type.BISHOP, rookStart);
 
-        assertThrows(IllegalStateException.class, () -> executor.undo(board, executed, king));
+        assertThrows(IllegalStateException.class, () -> executor.undo(board, executed));
         assertSame(king, board.getPiece(kingTo));
         assertSame(rook, board.getPiece(rookDestination));
         assertSame(obstruction, board.getPiece(rookStart));

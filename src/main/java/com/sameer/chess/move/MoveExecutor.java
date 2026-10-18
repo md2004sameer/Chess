@@ -12,9 +12,10 @@ import com.sameer.chess.model.enums.Type;
 @Component
 public class MoveExecutor {
 
-    public record Executed(Move move, Piece captured) {
+    public record Executed(Move move, Piece moved, Piece captured) {
         public Executed {
             Objects.requireNonNull(move, "move must not be null");
+            Objects.requireNonNull(moved, "moved piece must not be null");
         }
     }
 
@@ -57,18 +58,17 @@ public class MoveExecutor {
             }
             board.movePiece(move.from(), move.to());
         }
-        return new Executed(move, capturedPiece);
+        return new Executed(move, movingPiece, capturedPiece);
     }
 
-    public void undo(MutableBoard board, Executed executed, Piece originalPiece) {
+    public void undo(MutableBoard board, Executed executed) {
         Objects.requireNonNull(board, "board must not be null");
         Objects.requireNonNull(executed, "executed move must not be null");
-        Objects.requireNonNull(originalPiece, "original piece must not be null");
 
         Move move = executed.move();
         Piece expectedPiece = move.kind() == MoveKind.PROMOTION
-                ? new Piece(originalPiece.getColor(), move.promotionType())
-                : originalPiece;
+                ? new Piece(executed.moved().getColor(), move.promotionType())
+                : executed.moved();
         Piece movedPiece = board.getPiece(move.to());
         if (!expectedPiece.equals(movedPiece)) {
             throw new IllegalStateException("Expected moved piece at destination");
@@ -84,7 +84,7 @@ public class MoveExecutor {
                 throw new IllegalStateException("Castling rook start square occupied");
             }
             Piece rook = board.getPiece(castling.rookDestination(move.from()));
-            if (rook == null || rook.getColor() != originalPiece.getColor() || rook.getType() != Type.ROOK) {
+            if (rook == null || rook.getColor() != executed.moved().getColor() || rook.getType() != Type.ROOK) {
                 throw new IllegalStateException("Expected castling rook at destination");
             }
         }
@@ -100,7 +100,7 @@ public class MoveExecutor {
         if (move.kind() == MoveKind.CASTLING) {
             board.movePiece(castling.rookDestination(move.from()), castling.rookStart(move.from()));
         }
-        board.placePiece(move.from(), originalPiece);
+        board.placePiece(move.from(), executed.moved());
 
         if (executed.captured() != null) {
             board.placePiece(capturedPosition, executed.captured());

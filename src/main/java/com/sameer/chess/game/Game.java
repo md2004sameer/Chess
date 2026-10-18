@@ -55,7 +55,7 @@ public final class Game {
         GameState previousState = state.copy();
         Executed executed = moveExecutor.execute(board, move);
         state.recordMove(executed.move(), movingPiece, executed.captured());
-        history.push(new HistoryEntry(executed, movingPiece, previousState));
+        history.push(new HistoryEntry(executed, previousState));
         return executed.move();
     }
 
@@ -64,11 +64,11 @@ public final class Game {
             throw new IllegalStateException("There is no game move to undo");
         }
         HistoryEntry previous = history.peek();
-        moveExecutor.undo(board, previous.executed(), previous.movingPiece());
+        moveExecutor.undo(board, previous.executed());
         state.restore(previous.previousState());
         history.pop();
     }
 
-    private record HistoryEntry(Executed executed, Piece movingPiece, GameState previousState) {
+    private record HistoryEntry(Executed executed, GameState previousState) {
     }
 }
