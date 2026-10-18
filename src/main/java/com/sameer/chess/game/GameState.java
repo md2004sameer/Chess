@@ -120,10 +120,7 @@ public final class GameState {
         Color movingColor = sideToMove;
         revokeRights(move.from(), movingPiece);
         if (capturedPiece != null) {
-            Position capturePosition = move.isEnPassant()
-                    ? new Position(move.from().getRow(), move.to().getCol())
-                    : move.to();
-            revokeRights(capturePosition, capturedPiece);
+            revokeRights(move.capturePosition(), capturedPiece);
         }
 
         enPassantTarget = null;

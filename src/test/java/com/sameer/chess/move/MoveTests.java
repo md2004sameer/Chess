@@ -21,16 +21,20 @@ class MoveTests {
 
     @Test
     void storesPromotionAndSpecialMoveKinds() {
+        Position from = new Position(3, 4);
+        Position to = new Position(2, 3);
         Move promotion = new Move(
                 new Position(1, 0), new Position(0, 0), Type.KNIGHT, MoveKind.PROMOTION);
         Move castle = new Move(
                 new Position(7, 4), new Position(7, 6), null, MoveKind.CASTLING);
-        Move enPassant = new Move(
-                new Position(3, 4), new Position(2, 3), null, MoveKind.EN_PASSANT);
+        Move enPassant = new Move(from, to, null, MoveKind.EN_PASSANT);
+        Move normal = new Move(from, to);
 
         assertEquals(Type.KNIGHT, promotion.promotionType());
         assertTrue(castle.isCastling());
         assertTrue(enPassant.isEnPassant());
+        assertEquals(new Position(3, 3), enPassant.capturePosition());
+        assertEquals(to, normal.capturePosition());
     }
 
     @Test

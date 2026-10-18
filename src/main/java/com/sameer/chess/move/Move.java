@@ -51,4 +51,8 @@ public record Move(
     public boolean isEnPassant() {
         return kind == MoveKind.EN_PASSANT;
     }
+
+    public Position capturePosition() {
+        return kind == MoveKind.EN_PASSANT ? new Position(from.row(), to.col()) : to;
+    }
 }
