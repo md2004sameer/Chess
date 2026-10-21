@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const API = "/api/games";
+  const API = "api/games";
   const STORAGE_KEY = "square-one.game-id";
   const TERMINAL_STATUSES = new Set([
     "CHECKMATE",
