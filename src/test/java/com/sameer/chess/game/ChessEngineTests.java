@@ -84,10 +84,18 @@ class ChessEngineTests {
 
         assertFalse(game.playMove(Move.parse("a1a4")).accepted());
         assertFalse(game.playMove(Move.parse("a1a3")).accepted());
-        board.removePiece(Position.parse("a3"));
-        put(board, "a3", Color.BLACK, PieceType.BISHOP);
-        assertTrue(game.playMove(Move.parse("a1a3")).accepted());
-        assertEquals(Color.WHITE, board.getPiece(Position.parse("a3")).color());
+
+        Board captureBoard = Board.empty();
+        put(captureBoard, "h1", Color.WHITE, PieceType.KING);
+        put(captureBoard, "h8", Color.BLACK, PieceType.KING);
+        put(captureBoard, "a1", Color.WHITE, PieceType.ROOK);
+        put(captureBoard, "a3", Color.BLACK, PieceType.BISHOP);
+        Game captureGame = new Game(customState(captureBoard, Color.WHITE,
+                new CastlingRights(false, false, false, false), 0));
+
+        assertTrue(captureGame.playMove(Move.parse("a1a3")).accepted());
+        assertEquals(Color.WHITE, captureGame.board()
+                .getPiece(Position.parse("a3")).color());
     }
 
     @Test
@@ -146,7 +154,10 @@ class ChessEngineTests {
 
         assertEquals(GameStatus.CHECKMATE, game.getState().getStatus());
         assertTrue(game.isOver());
+        int historySize = game.getHistory().size();
         assertFalse(game.playMove(Move.parse("e2e4")).accepted());
+        assertEquals(historySize, game.getHistory().size());
+        assertEquals(GameStatus.CHECKMATE, game.getState().getStatus());
     }
 
     @Test
@@ -155,7 +166,7 @@ class ChessEngineTests {
         play(game, "e2e4", "e7e5", "g1f3", "b8c6", "f1e2", "g8f6");
         assertTrue(game.playMove(Move.parse("e1g1")).accepted());
 
-        Board board = game.getState().getBoard();
+        Board board = game.board();
         assertEquals(PieceType.KING, board.getPiece(Position.parse("g1")).type());
         assertEquals(PieceType.ROOK, board.getPiece(Position.parse("f1")).type());
         assertTrue(board.isEmpty(Position.parse("h1")));
@@ -172,7 +183,7 @@ class ChessEngineTests {
                 new CastlingRights(true, false, false, false), 0));
 
         assertFalse(game.playMove(Move.parse("e1g1")).accepted());
-        assertEquals(PieceType.KING, board.getPiece(Position.parse("e1")).type());
+        assertEquals(PieceType.KING, game.board().getPiece(Position.parse("e1")).type());
     }
 
     @Test
@@ -187,9 +198,10 @@ class ChessEngineTests {
         MoveResult result = game.playMove(Move.parse("e1c1"));
 
         assertTrue(result.accepted(), result.message());
-        assertEquals(PieceType.KING, board.getPiece(Position.parse("c1")).type());
-        assertEquals(PieceType.ROOK, board.getPiece(Position.parse("d1")).type());
-        assertNull(board.getPiece(Position.parse("a1")));
+        Board resultBoard = game.board();
+        assertEquals(PieceType.KING, resultBoard.getPiece(Position.parse("c1")).type());
+        assertEquals(PieceType.ROOK, resultBoard.getPiece(Position.parse("d1")).type());
+        assertNull(resultBoard.getPiece(Position.parse("a1")));
     }
 
     @Test
@@ -216,8 +228,9 @@ class ChessEngineTests {
                 Position.parse("d6"), 0, 1, GameStatus.ACTIVE));
 
         assertFalse(game.playMove(Move.parse("e5d6")).accepted());
-        assertEquals(PieceType.PAWN, board.getPiece(Position.parse("e5")).type());
-        assertEquals(PieceType.PAWN, board.getPiece(Position.parse("d5")).type());
+        Board currentBoard = game.board();
+        assertEquals(PieceType.PAWN, currentBoard.getPiece(Position.parse("e5")).type());
+        assertEquals(PieceType.PAWN, currentBoard.getPiece(Position.parse("d5")).type());
     }
 
     @Test
@@ -235,7 +248,7 @@ class ChessEngineTests {
             MoveResult result = game.playMove(move);
 
             assertTrue(result.accepted(), result.message());
-            assertEquals(promotion, board.getPiece(Position.parse("a8")).type());
+            assertEquals(promotion, game.board().getPiece(Position.parse("a8")).type());
         }
     }
 
@@ -260,6 +273,8 @@ class ChessEngineTests {
         }
 
         assertEquals(GameStatus.DRAW_FIVEFOLD_REPETITION, game.getState().getStatus());
+        assertTrue(game.isOver());
+        assertFalse(game.playMove(Move.parse("b1c3")).accepted());
     }
 
     @Test
@@ -268,8 +283,11 @@ class ChessEngineTests {
         GameState withoutRights = new GameState(initial.getBoard().copy(), Color.WHITE,
                 new CastlingRights(false, false, false, false), null,
                 0, 1, GameStatus.ACTIVE);
+        GameState blackToMove = new GameState(initial.getBoard().copy(), Color.BLACK,
+                initial.getCastlingRights().copy(), null, 0, 1, GameStatus.ACTIVE);
 
         assertFalse(initial.positionKey(false).equals(withoutRights.positionKey(false)));
+        assertFalse(initial.positionKey(false).equals(blackToMove.positionKey(false)));
     }
 
     @Test
@@ -342,7 +360,7 @@ class ChessEngineTests {
         long nodes = 0;
         for (Move move : validator.generateLegalMoves(state)) {
             GameState child = state.copy();
-            executor.applyUnchecked(child, move);
+            executor.execute(child, move);
             nodes += perft(child, depth - 1, validator, executor);
         }
         return nodes;
@@ -367,7 +385,7 @@ class ChessEngineTests {
     }
 
     private static void put(Board board, String square, Color color, PieceType type) {
-        board.placePiece(Position.parse(square), new Piece(color, type));
+        board.setPiece(Position.parse(square), new Piece(color, type));
     }
 
     private static GameState customState(Board board, Color active,

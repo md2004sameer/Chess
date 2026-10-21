@@ -1,6 +1,18 @@
 package com.sameer.chess.movegen;
 
+import java.util.List;
+import com.sameer.chess.game.GameState;
+import com.sameer.chess.model.Move;
+import com.sameer.chess.model.Position;
+
 /** Generates rook moves independently from other piece movement rules. */
-public final class RookMoveGenerator {
-    // TODO: Delegate rook generation to the shared sliding move helper.
+public final class RookMoveGenerator implements PieceMoveGenerator {
+    private static final int[][] DIRECTIONS = {
+            {-1, 0}, {1, 0}, {0, -1}, {0, 1}
+    };
+
+    @Override
+    public List<Move> generate(GameState state, Position from) {
+        return SlidingMoves.generate(state, from, DIRECTIONS);
+    }
 }

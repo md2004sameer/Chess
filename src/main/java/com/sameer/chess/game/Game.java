@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import com.sameer.chess.board.Board;
 import com.sameer.chess.engine.AttackDetector;
 import com.sameer.chess.engine.GameStatusEvaluator;
 import com.sameer.chess.engine.MoveExecutor;
 import com.sameer.chess.engine.MoveValidator;
+import com.sameer.chess.board.Board;
 import com.sameer.chess.model.Color;
 import com.sameer.chess.model.GameStatus;
 import com.sameer.chess.model.Move;
@@ -35,19 +35,25 @@ public final class Game {
         this(GameState.initial());
     }
 
+    /** Creates the standard initial chess game. */
+    public static Game newGame() {
+        return new Game();
+    }
+
     public Game(GameState state) {
-        this.state = Objects.requireNonNull(state, "state");
+        this.state = Objects.requireNonNull(state, "state").copy();
         moveGenerator = new MoveGenerator();
         attackDetector = new AttackDetector();
         moveExecutor = new MoveExecutor();
         moveValidator = MoveValidator.standard(moveGenerator, moveExecutor, attackDetector);
         statusEvaluator = new GameStatusEvaluator(moveValidator, attackDetector);
         repetitionCounts.put(positionKey(), 1);
-        state.setStatus(statusEvaluator.evaluate(state, 1));
+        this.state.setStatus(statusEvaluator.evaluate(this.state, 1));
     }
 
+    /** Returns a snapshot that callers can inspect without mutating this game. */
     public GameState getState() {
-        return state;
+        return state.copy();
     }
 
     public List<Move> getHistory() {
@@ -58,8 +64,33 @@ public final class Game {
         return isOver() ? List.of() : moveValidator.generateLegalMoves(state);
     }
 
+    /** Returns all legal moves for the side to move. */
+    public List<Move> legalMoves() {
+        return getLegalMoves();
+    }
+
+    /** Returns an independent board copy so callers cannot mutate the active game board. */
+    public Board board() {
+        return state.getBoard().copy();
+    }
+
     public boolean isOver() {
         return state.getStatus().isTerminal();
+    }
+
+    /** Returns the status of the current position. */
+    public GameStatus status() {
+        return state.getStatus();
+    }
+
+    /** Returns the color whose turn it is. */
+    public Color activeColor() {
+        return state.getActiveColor();
+    }
+
+    /** Validates and plays a move, preserving the existing playMove API. */
+    public MoveResult play(Move move) {
+        return playMove(move);
     }
 
     public MoveResult playMove(Move move) {
@@ -72,7 +103,10 @@ public final class Game {
 
         moveExecutor.execute(state, move);
         history.add(move);
-        int repetitions = repetitionCounts.merge(positionKey(), 1, Integer::sum);
+        String positionKey = positionKey();
+        Integer previousRepetitions = repetitionCounts.get(positionKey);
+        int repetitions = previousRepetitions == null ? 1 : previousRepetitions + 1;
+        repetitionCounts.put(positionKey, repetitions);
         state.setStatus(statusEvaluator.evaluate(state, repetitions));
         return new MoveResult(true, "Move accepted.", state.getStatus());
     }

@@ -1,6 +1,18 @@
 package com.sameer.chess.movegen;
 
+import java.util.List;
+import com.sameer.chess.game.GameState;
+import com.sameer.chess.model.Move;
+import com.sameer.chess.model.Position;
+
 /** Generates bishop moves independently from other piece movement rules. */
-public final class BishopMoveGenerator {
-    // TODO: Delegate bishop generation to the shared sliding move helper.
+public final class BishopMoveGenerator implements PieceMoveGenerator {
+    private static final int[][] DIRECTIONS = {
+            {-1, -1}, {-1, 1}, {1, -1}, {1, 1}
+    };
+
+    @Override
+    public List<Move> generate(GameState state, Position from) {
+        return SlidingMoves.generate(state, from, DIRECTIONS);
+    }
 }

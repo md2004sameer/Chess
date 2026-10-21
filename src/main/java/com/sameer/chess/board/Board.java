@@ -56,14 +56,15 @@ public final class Board {
         return getPiece(position) == null;
     }
 
-    public void placePiece(Position position, Piece piece) {
+    void placePiece(Position position, Piece piece) {
         setPiece(position, Objects.requireNonNull(piece, "piece"));
     }
 
-    public void removePiece(Position position) {
+    void removePiece(Position position) {
         setPiece(position, null);
     }
 
+    /** Mutates one square for engine execution; engine-internal, do not call from outside the engine. */
     public void setPiece(Position position, Piece piece) {
         if (!isInside(position)) {
             throw new IllegalArgumentException("Position is outside the board: " + position);
@@ -71,6 +72,7 @@ public final class Board {
         squares[position.row()][position.col()] = piece;
     }
 
+    /** Copies the board for safe simulations; engine-internal, do not call from outside the engine. */
     public Board copy() {
         return new Board(squares);
     }

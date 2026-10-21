@@ -12,11 +12,12 @@ import com.sameer.chess.model.Position;
 
 /** Applies a previously validated move to its game state. */
 public final class MoveExecutor {
+    /** Callers must validate first; use Game.play(). */
     public void execute(GameState state, Move move) {
         applyUnchecked(state, move);
     }
 
-    public void applyUnchecked(GameState state, Move move) {
+    void applyUnchecked(GameState state, Move move) {
         Board board = state.getBoard();
         Piece moving = board.getPiece(move.from());
         if (moving == null) {

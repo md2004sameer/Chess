@@ -45,20 +45,28 @@ public final class GameState {
     public int getFullmoveNumber() { return fullmoveNumber; }
     public GameStatus getStatus() { return status; }
 
+    /** Updates status internally; engine-internal, do not call from outside the engine. */
     public void setStatus(GameStatus status) { this.status = status; }
+    /** Updates the active side during execution; engine-internal, do not call from outside the engine. */
     public void setActiveColor(Color color) { this.activeColor = color; }
+    /** Updates castling metadata during execution; engine-internal, do not call from outside the engine. */
     public void setCastlingRights(CastlingRights rights) { this.castlingRights = rights; }
+    /** Updates en passant metadata during execution; engine-internal, do not call from outside the engine. */
     public void setEnPassantTarget(Position target) { this.enPassantTarget = target; }
+    /** Updates the halfmove clock during execution; engine-internal, do not call from outside the engine. */
     public void setHalfmoveClock(int clock) { this.halfmoveClock = clock; }
+    /** Advances the halfmove clock; engine-internal, do not call from outside the engine. */
     public void incrementHalfmoveClock() { halfmoveClock++; }
+    /** Advances the fullmove number; engine-internal, do not call from outside the engine. */
     public void incrementFullmoveNumber() { fullmoveNumber++; }
 
+    /** Copies state for safe move simulations without mutating the current position. */
     public GameState copy() {
         return new GameState(board.copy(), activeColor, castlingRights.copy(),
                 enPassantTarget, halfmoveClock, fullmoveNumber, status);
     }
 
-    public String positionKey(boolean includeEnPassantTarget) {
+    String positionKey(boolean includeEnPassantTarget) {
         StringBuilder key = new StringBuilder(80);
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
