@@ -5,6 +5,7 @@ public enum GameStatus {
     ACTIVE,
     CHECK,
     CHECKMATE,
+    RESIGNED,
     STALEMATE,
     DRAW_FIFTY_MOVE,
     DRAW_THREEFOLD_REPETITION,
