@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#262421">
+  <meta name="description" content="Play a free two-player chess game on one board. Square One keeps the focus on your moves, with a chess engine that validates every move.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Square One">
+  <meta property="og:title" content="Square One Chess | Free Two-Player Chess Game">
+  <meta property="og:description" content="Play a free two-player chess game on one board. No clocks, no noise—just the next move.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Square One Chess | Free Two-Player Chess Game">
+  <meta name="twitter:description" content="Play a free two-player chess game on one board. No clocks, no noise—just the next move.">
+  <title>Square One Chess | Free Two-Player Chess Game</title>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Square One Chess",
+      "description": "A free two-player chess game played on one board, with moves validated by a chess engine.",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Any",
+      "isAccessibleForFree": true
+    }
+  </script>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Square One home">
+        <span class="brand-mark" aria-hidden="true">♞</span>
+        <span>square<span class="brand-accent">one</span></span>
+      </a>
+      <p class="sidebar-caption">A quiet place to play</p>
+      <nav class="side-nav" aria-label="Main navigation">
+        <a class="nav-item active" href="#board" aria-current="page"><span aria-hidden="true">♟</span> Play</a>
+        <a class="nav-item" href="#history-title"><span aria-hidden="true">☷</span> Move history</a>
+      </nav>
+      <div class="sidebar-actions">
+        <button id="new-game" class="button button-primary" type="button">New game</button>
+        <button id="flip-board" class="button button-secondary" type="button" aria-pressed="false">Flip board</button>
+      </div>
+      <p class="sidebar-note">Two players, one board.</p>
+    </aside>
+
+    <main class="page-shell">
+      <section class="game-layout" aria-label="Chess game">
+        <div class="board-column">
+          <div class="board-heading">
+            <div>
+              <p class="eyebrow">LOCAL GAME</p>
+              <h1>Make your move.</h1>
+            </div>
+            <span id="turn-pill" class="turn-pill" aria-live="polite">Loading game…</span>
+          </div>
+
+          <div class="player-strip player-top">
+            <span class="player-avatar player-avatar-small black-token" aria-hidden="true">A</span>
+            <span class="player-name">Alice (Black)</span>
+            <span id="black-state" class="player-state"></span>
+          </div>
+
+          <div id="board" class="board" role="group" aria-label="Chess board" aria-busy="true"></div>
+
+          <div class="player-strip player-bottom">
+            <span class="player-avatar player-avatar-small white-token" aria-hidden="true">JD</span>
+            <span class="player-name">John Doe (White)</span>
+            <span id="white-state" class="player-state"></span>
+          </div>
+
+          <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+        </div>
+
+        <aside class="game-panel" aria-label="Game information">
+          <div class="panel-title-row">
+            <div>
+              <p class="eyebrow">THE MATCH</p>
+              <h2>Game room</h2>
+            </div>
+            <span id="game-status" class="status-badge" aria-live="polite">Connecting</span>
+          </div>
+
+          <div class="player-card">
+            <div class="player-card-side">
+              <span class="player-avatar player-avatar-large black-token" aria-hidden="true">A</span>
+              <div><span class="card-player-name">Alice (Black)</span><span class="card-player-sub">Playing from this device</span></div>
+            </div>
+            <span id="black-turn" class="turn-marker" aria-label="Not to move"></span>
+          </div>
+          <div class="player-card">
+            <div class="player-card-side">
+              <span class="player-avatar player-avatar-large white-token" aria-hidden="true">JD</span>
+              <div><span class="card-player-name">John Doe (White)</span><span class="card-player-sub">Playing from this device</span></div>
+            </div>
+            <span id="white-turn" class="turn-marker" aria-label="Not to move"></span>
+          </div>
+
+          <div class="game-actions" aria-label="Game actions">
+            <button id="claim-draw" class="button button-action" type="button" disabled>Claim draw</button>
+            <button id="resign" class="button button-resign" type="button">Resign</button>
+          </div>
+
+          <section class="history-section" aria-labelledby="history-title">
+            <div class="section-heading">
+              <h3 id="history-title">Move history</h3>
+              <span id="move-count" class="move-count">0 moves</span>
+            </div>
+            <div id="move-history" class="move-history" aria-live="polite">
+              <p class="history-empty">Moves will appear here.</p>
+            </div>
+          </section>
+          <p class="panel-note">The chess engine validates every move.</p>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="promotion-dialog" class="promotion-dialog" aria-labelledby="promotion-title">
+    <form method="dialog">
+      <p class="eyebrow">PAWN PROMOTION</p>
+      <h2 id="promotion-title">Choose a piece</h2>
+      <p class="promotion-description">Select what your pawn should become.</p>
+      <div id="promotion-options" class="promotion-options"></div>
+      <button class="dialog-cancel" value="cancel">Cancel</button>
+    </form>
+  </dialog>
+
+  <footer class="page-footer">
+    <p>No clocks. No noise. Just the next move.</p>
+    <p>Built with ❤️ by <a href="https://www.linkedin.com/in/sameerog/" target="_blank" rel="noopener noreferrer">Sameer</a></p>
+  </footer>
+</body>
+</html>

@@ -28,6 +28,20 @@ class GameDrawRuleTests {
     }
 
     @Test
+    void resignationEndsTheGameWithoutChangingTheResigningSideOrMoveHistory() {
+        Game game = new Game();
+
+        assertTrue(game.resign());
+
+        assertEquals(GameStatus.RESIGNED, game.status());
+        assertEquals(Color.WHITE, game.activeColor());
+        assertTrue(game.isOver());
+        assertFalse(game.resign());
+        assertFalse(game.playMove(Move.parse("e2e4")).accepted());
+        assertTrue(game.getHistory().isEmpty());
+    }
+
+    @Test
     void quietMoveReachesFiftyMoveClaimThreshold() {
         Game game = gameAtHalfmoveClock(99);
 
