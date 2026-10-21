@@ -29,6 +29,7 @@ public final class Game {
     private final FiftyMoveRule fiftyMoveRule = new FiftyMoveRule();
     private final ThreefoldRepetitionRule threefoldRule = new ThreefoldRepetitionRule();
     private final List<Move> history = new ArrayList<>();
+    private final List<String> sanHistory = new ArrayList<>();
     private final Map<String, Integer> repetitionCounts = new HashMap<>();
 
     public Game() {
@@ -58,6 +59,10 @@ public final class Game {
 
     public List<Move> getHistory() {
         return List.copyOf(history);
+    }
+
+    public List<String> getSanHistory() {
+        return List.copyOf(sanHistory);
     }
 
     public List<Move> getLegalMoves() {
@@ -101,6 +106,7 @@ public final class Game {
             return new MoveResult(false, validation.message(), state.getStatus());
         }
 
+        String san = sanFor(move);
         moveExecutor.execute(state, move);
         history.add(move);
         String positionKey = positionKey();
@@ -108,7 +114,59 @@ public final class Game {
         int repetitions = previousRepetitions == null ? 1 : previousRepetitions + 1;
         repetitionCounts.put(positionKey, repetitions);
         state.setStatus(statusEvaluator.evaluate(state, repetitions));
+        if (state.getStatus() == GameStatus.CHECK) san += "+";
+        if (state.getStatus() == GameStatus.CHECKMATE) san += "#";
+        sanHistory.add(san);
         return new MoveResult(true, "Move accepted.", state.getStatus());
+    }
+
+    private String sanFor(Move move) {
+        var board = state.getBoard();
+        var piece = board.getPiece(move.from());
+        boolean castling = piece.type() == PieceType.KING
+                && Math.abs(move.to().col() - move.from().col()) == 2;
+        if (castling) return move.to().col() > move.from().col() ? "O-O" : "O-O-O";
+
+        boolean capture = board.getPiece(move.to()) != null
+                || piece.type() == PieceType.PAWN
+                        && move.from().col() != move.to().col()
+                        && move.to().equals(state.getEnPassantTarget());
+        StringBuilder san = new StringBuilder();
+        if (piece.type() == PieceType.PAWN) {
+            if (capture) san.append((char) ('a' + move.from().col()));
+        } else {
+            san.append(piece.type().symbol());
+            appendDisambiguation(san, move, piece.color(), piece.type());
+        }
+        if (capture) san.append('x');
+        san.append(move.to());
+        if (move.promotionType() != null) {
+            san.append('=').append(move.promotionType().symbol());
+        }
+        return san.toString();
+    }
+
+    private void appendDisambiguation(StringBuilder san, Move move, Color color, PieceType type) {
+        boolean hasAlternative = false;
+        boolean sameFile = false;
+        boolean sameRank = false;
+        for (Move candidate : moveValidator.generateLegalMoves(state)) {
+            if (candidate.equals(move) || !candidate.to().equals(move.to())) continue;
+            var other = state.getBoard().getPiece(candidate.from());
+            if (other == null || other.color() != color || other.type() != type) continue;
+            hasAlternative = true;
+            if (candidate.from().col() == move.from().col()) sameFile = true;
+            if (candidate.from().row() == move.from().row()) sameRank = true;
+        }
+        if (!hasAlternative) return;
+        if (!sameFile) {
+            san.append((char) ('a' + move.from().col()));
+        } else if (!sameRank) {
+            san.append((char) ('8' - move.from().row()));
+        } else {
+            san.append((char) ('a' + move.from().col()))
+                    .append((char) ('8' - move.from().row()));
+        }
     }
 
     public boolean canClaimFiftyMoveDraw() {
@@ -117,6 +175,22 @@ public final class Game {
 
     public boolean canClaimThreefoldRepetitionDraw() {
         return !isOver() && threefoldRule.canClaim(state, currentRepetitionCount());
+    }
+
+    public boolean canClaimDraw() {
+        return canClaimFiftyMoveDraw() || canClaimThreefoldRepetitionDraw();
+    }
+
+    public boolean claimDraw() {
+        if (canClaimFiftyMoveDraw()) return claimFiftyMoveDraw();
+        return claimThreefoldRepetitionDraw();
+    }
+
+    /** Ends an active game by resignation; the active side is the resigning player. */
+    public boolean resign() {
+        if (isOver()) return false;
+        state.setStatus(GameStatus.RESIGNED);
+        return true;
     }
 
     public boolean claimFiftyMoveDraw() {
