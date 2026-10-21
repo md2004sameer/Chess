@@ -1,6 +1,15 @@
-package com.sameer.chess;
+package com.sameer.chess.engine;
 
 import java.util.List;
+import com.sameer.chess.board.Board;
+import com.sameer.chess.game.GameState;
+import com.sameer.chess.model.Color;
+import com.sameer.chess.model.Move;
+import com.sameer.chess.model.Piece;
+import com.sameer.chess.model.PieceType;
+import com.sameer.chess.model.Position;
+import com.sameer.chess.model.ValidationResult;
+import com.sameer.chess.movegen.MoveGenerator;
 
 /** Builds the ordered validation rules used by the chess move validator. */
 final class StandardMoveRules {

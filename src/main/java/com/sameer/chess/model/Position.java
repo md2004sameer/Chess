@@ -10,7 +10,9 @@ public record Position(int row, int col) {
         if (square == null || !square.matches("[a-h][1-8]")) {
             throw new IllegalArgumentException("Square must look like e2.");
         }
-        return new Position(8 - (square.charAt(1) - '0'), square.charAt(0) - 'a');
+        int col = square.charAt(0) - 'a';
+        int row = 8 - Character.digit(square.charAt(1), 10);
+        return new Position(row, col);
     }
 
     @Override

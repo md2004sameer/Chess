@@ -1,11 +1,19 @@
 package com.sameer.chess.model;
 
 /** Tracks which king- and queen-side castling options remain available. */
-public record CastlingRights(
-        boolean whiteKingSide,
-        boolean whiteQueenSide,
-        boolean blackKingSide,
-        boolean blackQueenSide) {
+public final class CastlingRights {
+    private boolean whiteKingSide;
+    private boolean whiteQueenSide;
+    private boolean blackKingSide;
+    private boolean blackQueenSide;
+
+    public CastlingRights(boolean whiteKingSide, boolean whiteQueenSide,
+                          boolean blackKingSide, boolean blackQueenSide) {
+        this.whiteKingSide = whiteKingSide;
+        this.whiteQueenSide = whiteQueenSide;
+        this.blackKingSide = blackKingSide;
+        this.blackQueenSide = blackQueenSide;
+    }
 
     public boolean canCastle(Color color, boolean kingSide) {
         if (color == Color.WHITE) {
@@ -14,19 +22,28 @@ public record CastlingRights(
         return kingSide ? blackKingSide : blackQueenSide;
     }
 
-    public CastlingRights withoutKingSide(Color color) {
-        return color == Color.WHITE
-                ? new CastlingRights(false, whiteQueenSide, blackKingSide, blackQueenSide)
-                : new CastlingRights(whiteKingSide, whiteQueenSide, false, blackQueenSide);
+    public void disableKingSide(Color color) {
+        if (color == Color.WHITE) whiteKingSide = false;
+        else blackKingSide = false;
     }
 
-    public CastlingRights withoutQueenSide(Color color) {
-        return color == Color.WHITE
-                ? new CastlingRights(whiteKingSide, false, blackKingSide, blackQueenSide)
-                : new CastlingRights(whiteKingSide, whiteQueenSide, blackKingSide, false);
+    public void disableQueenSide(Color color) {
+        if (color == Color.WHITE) whiteQueenSide = false;
+        else blackQueenSide = false;
     }
 
-    public CastlingRights withoutBoth(Color color) {
-        return withoutKingSide(color).withoutQueenSide(color);
+    public void disableBoth(Color color) {
+        disableKingSide(color);
+        disableQueenSide(color);
+    }
+
+    public CastlingRights copy() {
+        return new CastlingRights(
+                whiteKingSide, whiteQueenSide, blackKingSide, blackQueenSide);
+    }
+
+    public String key() {
+        return "" + (whiteKingSide ? 'K' : '-') + (whiteQueenSide ? 'Q' : '-')
+                + (blackKingSide ? 'k' : '-') + (blackQueenSide ? 'q' : '-');
     }
 }

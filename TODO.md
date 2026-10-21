@@ -20,6 +20,19 @@ Baseline: `./gradlew test` failed during `:compileJava` because `MoveValidator` 
 
 Phase 1 note: Added the requested value types under `com.sameer.chess.model`. The full-suite baseline compile blocker was the missing `StandardMoveRules` factory; it has been restored so the repository builds and the existing suite can run. `./gradlew test` passes all 27 tests (23 existing and 4 new).
 
+## Package organization task (added 2026-10-21)
+- [x] Inspect base package and build tool: `com.sameer.chess`, Gradle.
+- [x] Run and record a fresh baseline build and test run.
+- [x] Move/split existing chess classes into the requested `model`, `board`, `game`, `movegen`, `engine`, and `util` packages without changing chess logic.
+- [x] Move and organize tests under matching test packages.
+- [x] Add minimal TODO stubs for requested classes that do not exist, with one-line Javadocs.
+- [x] Remove duplicates only after compilation succeeds; ensure no Spring imports in chess packages.
+- [x] Run build and all tests, compare results with baseline, and print the final source tree.
+
+Package-organization baseline: `./gradlew test` — `BUILD SUCCESSFUL`; Gradle reported tasks `UP-TO-DATE`, and the prior report contained 27 tests with zero failures/errors. Post-organization `./gradlew test` — `BUILD SUCCESSFUL`, 27 tests, zero failures/errors/skips.
+
+Organization note: Existing move logic remains in `MoveGenerator`; requested per-piece generators, `SlidingMoves`, `MoveGeneratorRegistry`, and `BoardPrinter` were absent and are TODO stubs because splitting/implementing them would change or add behavior.
+
 ## Phase 2: Board, GameState, BoardPrinter
 - [ ] Add an 8x8 `Board` with `getPiece`, `setPiece`, `isInside`, and `isEmpty`. Board does not handle turns, legality, check, or status.
 - [ ] Add `Board.copy()` and a factory for the initial position.
