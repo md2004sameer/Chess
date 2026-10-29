@@ -32,98 +32,15 @@ The engine is not a chess-playing AI. It does not evaluate moves strategically o
 
 The frontend has no separate package manager or build step. The Spring Boot application serves the files in `src/main/resources/static`.
 
-## Architecture
+## Architecture and design diagrams
 
-The core chess packages are separate from Spring's HTTP layer. The API translates JSON into domain values and maps results back to DTOs; the engine itself works with game state, board positions, and moves.
+The diagrams are split by purpose so each can be opened and previewed independently.
 
-See [the detailed architecture diagrams](docs/architecture.md) for the full system layers, class relationships, and move lifecycle.
+- [System architecture](docs/architecture.md) — browser, Spring Boot API, game-session registry, and chess engine layers.
+- [Application class diagram](docs/class-diagram.md) — API controllers, service/session management, DTOs, domain objects, and API errors.
+- [Chess engine class diagram](docs/chess-engine-class-diagram.md) — `Game`, `GameState`, move validation/execution, status evaluation, move generators, board, and rule-model relationships.
 
-```mermaid
-flowchart TD
-    Host["ChessApplication / Spring Boot host"]
-    Browser["Browser UI: HTML, CSS, JavaScript"]
-    Controller["GameController"]
-    Service["GameService"]
-    Registry["UUID-keyed in-memory game sessions"]
-    Game["Game and GameState"]
-    Validator["MoveValidator and LegalMoveCollector"]
-    Generator["MoveGenerator and piece generators"]
-    Attack["AttackDetector and CastlingChecker"]
-    Executor["MoveExecutor"]
-    Evaluator["GameStatusEvaluator"]
-    Board["Board and model values"]
-
-    Host -->|serves static files| Browser
-    Browser -->|HTTP and JSON| Controller
-    Host --> Controller
-    Controller --> Service
-    Service --> Registry
-    Registry --> Game
-    Game --> Validator
-    Validator --> Generator
-    Validator --> Attack
-    Validator --> Executor
-    Game --> Executor
-    Game --> Evaluator
-    Evaluator --> Validator
-    Evaluator --> Attack
-    Game --> Board
-    Validator --> Board
-    Executor --> Board
-```
-
-### Main responsibilities
-
-| Package or class | Responsibility |
-|---|---|
-| `ChessApplication` | Starts the Spring Boot host. |
-| `api.GameController` | Defines the HTTP endpoints under `/api/games`. |
-| `api.GameService` | Creates and looks up games, synchronizes operations per game, validates request data, and maps engine values to API DTOs. |
-| `api.dto` | Defines the request, game, piece, move, and error JSON shapes. |
-| `api.error` | Maps expected client errors to HTTP status codes and stable error codes. |
-| `board.Board` | Stores the 8x8 grid. It does not decide whether a move is legal. |
-| `game.Game` | Coordinates move validation, execution, move history, SAN, repetition tracking, draw claims, and game status. |
-| `game.GameState` | Holds the board, side to move, castling rights, en-passant target, move counters, and status. |
-| `model` | Defines values such as `Piece`, `Position`, `Move`, `Color`, `CastlingRights`, and `GameStatus`. |
-| `movegen` | Generates pseudo-legal moves for each piece type. |
-| `engine.MoveValidator` | Checks coordinates, ownership and turn, movement patterns, promotion, castling, and king safety. |
-| `engine.AttackDetector` | Determines whether a square is attacked and whether a king is in check. |
-| `engine.MoveExecutor` | Applies a validated move and updates turn, castling rights, en-passant metadata, and counters. |
-| `engine.GameStatusEvaluator` | Detects checkmate, stalemate, and implemented automatic draw conditions. |
-
-### Move execution
-
-The game validates a move before applying it to the live state. King-safety checks execute candidates against a copied state, so a rejected move does not partially change the current game. The service also synchronizes operations on the same game session to prevent two requests from successfully playing the same turn.
-
-```mermaid
-sequenceDiagram
-    participant Client as Browser or API client
-    participant Controller as GameController
-    participant Service as GameService
-    participant Game as Game
-    participant Validator as MoveValidator
-    participant Executor as MoveExecutor
-    participant Evaluator as GameStatusEvaluator
-
-    Client->>Controller: POST /api/games/{gameId}/moves
-    Controller->>Service: playMove(gameId, request)
-    Service->>Service: Parse request and find game session
-    Service->>Game: play(move)
-    Game->>Validator: validate(state, move)
-    Validator-->>Game: Validation result
-    alt Move is rejected
-        Game-->>Service: Rejected MoveResult
-        Service-->>Controller: IllegalMoveException
-        Controller-->>Client: 422 ILLEGAL_MOVE
-    else Move is accepted
-        Game->>Executor: Apply validated move
-        Game->>Game: Record move, SAN, and repetition count
-        Game->>Evaluator: Evaluate resulting position
-        Game-->>Service: Accepted MoveResult
-        Service-->>Controller: GameDto
-        Controller-->>Client: 200 game snapshot
-    end
-```
+Each diagram is a separate Mermaid Markdown file. GitHub renders the diagrams when opened; in VS Code, open a file and use `Cmd+Shift+V` on macOS or `Ctrl+Shift+V` on Windows/Linux.
 
 ## Chess rules and state
 
