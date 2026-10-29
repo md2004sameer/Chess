@@ -125,7 +125,7 @@ classDiagram
     class SlidingMoves
 
     class Board {
-        -Piece squares
+        -squares
         +initialPosition()
         +getPiece(position)
         +setPiece(position, piece)
@@ -167,7 +167,6 @@ classDiagram
 
     DrawClaimRule <|.. FiftyMoveRule
     DrawClaimRule <|.. ThreefoldRepetitionRule
-    Game --> DrawClaimRule : evaluates draw claims
 
     MoveValidator --> MoveGenerator
     MoveValidator --> MoveExecutor : simulates candidates on copied state
