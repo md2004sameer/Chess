@@ -109,7 +109,7 @@ classDiagram
     }
 
     class Board {
-        -Piece squares
+        -squares
         +getPiece(position)
         +setPiece(position, piece)
         +copy()
