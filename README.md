@@ -36,6 +36,8 @@ The frontend has no separate package manager or build step. The Spring Boot appl
 
 The core chess packages are separate from Spring's HTTP layer. The API translates JSON into domain values and maps results back to DTOs; the engine itself works with game state, board positions, and moves.
 
+See [the detailed architecture diagrams](docs/architecture.md) for the full system layers, class relationships, and move lifecycle.
+
 ```mermaid
 flowchart TD
     Host["ChessApplication / Spring Boot host"]
