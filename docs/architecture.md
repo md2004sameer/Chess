@@ -102,52 +102,46 @@ flowchart TB
 
 ## 2. Move lifecycle
 
-This sequence shows what happens when the browser submits a move through `POST /api/games/{gameId}/moves`.
+This flow shows how `POST /api/games/{gameId}/moves` travels through the browser, API, game service, and chess engine.
 
 ```mermaid
 sequenceDiagram
-    actor Player
-    participant Browser as Browser app.js
-    participant API as GameController
+    participant Player
+    participant Browser
+    participant Controller as GameController
     participant Service as GameService
-    participant Game as Game
+    participant Game
     participant Validator as MoveValidator
-    participant Generator as MoveGenerator
     participant Executor as MoveExecutor
-    participant Status as GameStatusEvaluator
+    participant Evaluator as GameStatusEvaluator
 
-    Player->>Browser: Select source and destination
-    Browser->>API: POST move request (JSON)
-    API->>Service: playMove(gameId, request)
-    Service->>Service: Parse squares and promotion
-    Service->>Service: Find session and synchronize on it
+    Player->>Browser: Submit a move
+    Browser->>Controller: POST move request
+    Controller->>Service: playMove(gameId, request)
+    Service->>Service: Parse move and find game session
     Service->>Game: play(move)
     Game->>Validator: validate(state, move)
-    Validator->>Generator: Generate piece movement candidates
-    Generator-->>Validator: Pseudo-legal candidates
-    Validator->>Validator: Check turn, ownership, promotion, castling and king safety
+    Validator->>Executor: Simulate candidate on copied state
+    Validator-->>Game: ValidationResult
 
     alt Move is illegal
-        Validator-->>Game: Rejected ValidationResult
         Game-->>Service: Rejected MoveResult
-        Service-->>API: IllegalMoveException
-        API-->>Browser: Error response
+        Service-->>Controller: IllegalMoveException
+        Controller-->>Browser: Error response
+        Browser-->>Player: Show move error
     else Move is legal
-        Validator-->>Game: Valid ValidationResult
-        Game->>Executor: Apply move to live GameState
-        Executor->>Executor: Update board, turn, castling, en passant and counters
-        Game->>Game: Append move and SAN; update repetition counts
-        Game->>Status: Evaluate resulting position
-        Status-->>Game: Active/check/mate/stalemate/draw status
+        Game->>Executor: Apply move to live state
+        Game->>Game: Record move, SAN, and repetition count
+        Game->>Evaluator: Evaluate resulting position
+        Evaluator-->>Game: GameStatus
         Game-->>Service: Accepted MoveResult
-        Service->>Service: Map state to GameDto
-        Service-->>API: GameDto
-        API-->>Browser: Updated board, status and move history
-        Browser-->>Player: Render resulting position
+        Service-->>Controller: GameDto
+        Controller-->>Browser: Updated game JSON
+        Browser-->>Player: Render updated board
     end
 ```
 
-Important: king-safety validation simulates candidate moves on a copied state. A rejected move must not partially change the active game's board.
+King-safety validation simulates candidate moves against a copied game state. The live state is changed only after the move has passed validation.
 
 ## 3. Core class relationships
 
